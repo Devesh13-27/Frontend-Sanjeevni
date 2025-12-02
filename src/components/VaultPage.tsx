@@ -1,0 +1,416 @@
+import { useState } from 'react';
+import { FileText, Receipt, Activity, Shield, Upload, X, ChevronDown, Sparkles, Check } from 'lucide-react';
+import { UserData, Document } from '../App';
+import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
+
+type Props = {
+  userData: UserData;
+  onNavigateToHome: () => void;
+  onNavigateToProfile: () => void;
+  documents: Document[];
+  onAddDocument: (document: Document) => void;
+  onDeleteDocument: (id: string) => void;
+};
+
+type Category = 'lab-reports' | 'prescriptions' | 'insurance' | 'bills' | 'all';
+
+export function VaultPage({
+  userData,
+  onNavigateToHome,
+  onNavigateToProfile,
+  documents,
+  onAddDocument,
+  onDeleteDocument,
+}: Props) {
+  const [selectedOwner, setSelectedOwner] = useState('self');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('all');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadData, setUploadData] = useState({
+    name: '',
+    category: 'lab-reports' as Category,
+  });
+  const [summaryMode, setSummaryMode] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+
+  const owners = [
+    { value: 'self', label: userData.personalInfo.fullName },
+    ...userData.personalInfo.emergencyContacts.map((contact, idx) => ({
+      value: `contact-${idx}`,
+      label: contact.name,
+    })),
+  ];
+
+  const categories = [
+    { id: 'lab-reports', label: 'Lab Reports', icon: Activity, color: '#309898' },
+    { id: 'prescriptions', label: 'Prescriptions', icon: FileText, color: '#FF8000' },
+    { id: 'insurance', label: 'Insurance', icon: Shield, color: '#309898' },
+    { id: 'bills', label: 'Bills & Receipts', icon: Receipt, color: '#FF8000' },
+  ];
+
+  const filteredDocuments = documents
+    .filter(doc => doc.owner === selectedOwner)
+    .filter(doc => selectedCategory === 'all' || doc.category === selectedCategory)
+    .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+
+  const handleUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (uploadData.name && uploadData.category !== 'all') {
+      const newDoc: Document = {
+        id: Date.now().toString(),
+        name: uploadData.name,
+        category: uploadData.category as Exclude<Category, 'all'>,
+        uploadDate: new Date().toISOString(),
+        owner: selectedOwner,
+      };
+      onAddDocument(newDoc);
+      setUploadData({ name: '', category: 'lab-reports' });
+      setShowUploadModal(false);
+    }
+  };
+
+  const handleGetSummary = () => {
+    setSummaryMode(true);
+    setSelectedFiles(new Set());
+  };
+
+  const handleCancelSummary = () => {
+    setSummaryMode(false);
+    setSelectedFiles(new Set());
+  };
+
+  const handleFileClick = (docId: string) => {
+    if (summaryMode) {
+      const newSelected = new Set(selectedFiles);
+      if (newSelected.has(docId)) {
+        newSelected.delete(docId);
+      } else {
+        newSelected.add(docId);
+      }
+      setSelectedFiles(newSelected);
+    }
+  };
+
+  const handleGo = () => {
+    if (selectedFiles.size > 0) {
+      setShowSummaryModal(true);
+    }
+  };
+
+  const closeSummaryModal = () => {
+    setShowSummaryModal(false);
+    setSummaryMode(false);
+    setSelectedFiles(new Set());
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#309898]/10 via-white to-[#FF8000]/10">
+      {/* Header */}
+      <header className="bg-white shadow-md sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="Vytara Logo" className="w-12 h-12" />
+            <h1 className="text-[#309898]">Vytara - Vault</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onNavigateToHome}
+              className="px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
+            >
+              Home
+            </button>
+            <button
+              onClick={onNavigateToProfile}
+              className="px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition"
+            >
+              Profile
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Owner Selector */}
+        <div className="mb-8">
+          <label className="block text-[#309898] mb-2">Select Person</label>
+          <div className="relative">
+            <select
+              value={selectedOwner}
+              onChange={(e) => setSelectedOwner(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none appearance-none bg-white pr-10 cursor-pointer"
+            >
+              {owners.map((owner) => (
+                <option key={owner.value} value={owner.value}>
+                  {owner.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#309898] pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Category Tabs and Actions */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`px-4 py-2 rounded-lg transition ${
+                  selectedCategory === 'all'
+                    ? 'bg-gradient-to-r from-[#309898] to-[#FF8000] text-white'
+                    : 'bg-white border-2 border-[#309898]/20 text-gray-700 hover:border-[#309898]'
+                }`}
+              >
+                All Documents
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id as Category)}
+                  className={`px-4 py-2 rounded-lg transition ${
+                    selectedCategory === cat.id
+                      ? 'text-white'
+                      : 'bg-white border-2 text-gray-700'
+                  }`}
+                  style={{
+                    backgroundColor: selectedCategory === cat.id ? cat.color : undefined,
+                    borderColor: selectedCategory === cat.id ? cat.color : 'rgba(48, 152, 152, 0.2)',
+                  }}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              {!summaryMode ? (
+                <>
+                  <button
+                    onClick={handleGetSummary}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Get Summary
+                  </button>
+                  <button
+                    onClick={() => setShowUploadModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload Document
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleCancelSummary}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGo}
+                    disabled={selectedFiles.size === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Go ({selectedFiles.size})
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {summaryMode && (
+            <div className="bg-purple-100 border-2 border-purple-600 rounded-lg p-3 text-purple-800">
+              <p className="text-sm">
+                <Sparkles className="w-4 h-4 inline mr-2" />
+                Click on files to select them for AI summary. {selectedFiles.size} file(s) selected.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Documents Grid */}
+        {filteredDocuments.length === 0 ? (
+          <div className="text-center py-20">
+            <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500 text-lg">No documents in this category</p>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="mt-4 px-6 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
+            >
+              Upload Your First Document
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDocuments.map((doc) => {
+              const category = categories.find((c) => c.id === doc.category);
+              const Icon = category?.icon || FileText;
+              const isSelected = selectedFiles.has(doc.id);
+
+              return (
+                <div
+                  key={doc.id}
+                  onClick={() => handleFileClick(doc.id)}
+                  className={`relative bg-white rounded-2xl shadow-lg p-6 border-4 transition-all cursor-pointer ${
+                    summaryMode ? 'hover:scale-105' : ''
+                  } ${
+                    isSelected
+                      ? 'border-purple-600 bg-purple-50'
+                      : `border-[${category?.color}]/30`
+                  }`}
+                  style={{
+                    borderColor: isSelected ? '#9333ea' : `${category?.color}33`,
+                  }}
+                >
+                  {summaryMode && (
+                    <div className="absolute top-2 left-2 w-6 h-6 rounded border-2 flex items-center justify-center bg-white"
+                      style={{
+                        borderColor: isSelected ? '#9333ea' : '#ccc',
+                        backgroundColor: isSelected ? '#9333ea' : 'white',
+                      }}
+                    >
+                      {isSelected && <Check className="w-4 h-4 text-white" />}
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between mb-4">
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: `${category?.color}20` }}
+                    >
+                      <Icon className="w-6 h-6" style={{ color: category?.color }} />
+                    </div>
+                    {!summaryMode && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteDocument(doc.id);
+                        }}
+                        className="text-red-500 hover:text-red-700 transition"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                  <h3 className="text-gray-800 mb-2">{doc.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {new Date(doc.uploadDate).toLocaleDateString()}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{category?.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative border-4 border-[#309898]">
+            <button
+              onClick={() => setShowUploadModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-[#309898] mb-6">Upload Document</h2>
+
+            <form onSubmit={handleUpload} className="space-y-4">
+              <div>
+                <label className="block text-[#309898] mb-2">Document Name</label>
+                <input
+                  type="text"
+                  value={uploadData.name}
+                  onChange={(e) => setUploadData({ ...uploadData, name: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
+                  placeholder="Enter document name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#309898] mb-2">Category</label>
+                <select
+                  value={uploadData.category}
+                  onChange={(e) => setUploadData({ ...uploadData, category: e.target.value as Category })}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[#309898] mb-2">File</label>
+                <div className="border-2 border-dashed border-[#309898]/30 rounded-lg p-8 text-center hover:border-[#FF8000] transition cursor-pointer">
+                  <Upload className="w-8 h-8 mx-auto text-[#309898] mb-2" />
+                  <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF, JPG, PNG up to 10MB</p>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-[#309898] to-[#FF8000] text-white py-3 rounded-lg hover:shadow-lg transition"
+              >
+                Upload
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Summary Modal */}
+      {showSummaryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 relative border-4 border-purple-600">
+            <button
+              onClick={closeSummaryModal}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <Sparkles className="w-8 h-8 text-purple-600" />
+              <h2 className="text-purple-600">AI Medical Summary</h2>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 mb-2">
+                Analyzing {selectedFiles.size} document{selectedFiles.size !== 1 ? 's' : ''}...
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {filteredDocuments
+                  .filter(doc => selectedFiles.has(doc.id))
+                  .map(doc => (
+                    <span key={doc.id} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                      {doc.name}
+                    </span>
+                  ))}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-2xl p-6 min-h-[300px] border-2 border-gray-200">
+              <p className="text-gray-600 italic text-center mt-20">
+                AI SUMMARY HERE
+              </p>
+            </div>
+
+            <button
+              onClick={closeSummaryModal}
+              className="w-full mt-6 bg-gradient-to-r from-[#309898] to-[#FF8000] text-white py-3 rounded-lg hover:shadow-lg transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
