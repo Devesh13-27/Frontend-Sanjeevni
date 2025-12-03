@@ -4,9 +4,9 @@ import logoImage from 'figma:asset/3356ef9e7b4ecad1a9839c039785983e296f414d.png'
 
 export default function HomePage({ onNavigateToVault, onNavigateToProfile }) {
   const [activeModal, setActiveModal] = useState(null);
-  const [summaryMode, setSummaryMode] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState(new Set());
   const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryText, setSummaryText] = useState('');
+  const [recentDocs, setRecentDocs] = useState([]);
 
   // Sample documents for demo
   const documents = [
@@ -16,37 +16,22 @@ export default function HomePage({ onNavigateToVault, onNavigateToProfile }) {
   ];
 
   const handleGetSummary = () => {
-    setSummaryMode(true);
-    setSelectedFiles(new Set());
-  };
+    // Sort documents by upload date descending and take up to 5 recent ones
+    const recentDocs = documents
+      .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
+      .slice(0, 5);
 
-  const handleCancelSummary = () => {
-    setSummaryMode(false);
-    setSelectedFiles(new Set());
-  };
-
-  const handleFileClick = (docId) => {
-    if (summaryMode) {
-      const newSelected = new Set(selectedFiles);
-      if (newSelected.has(docId)) {
-        newSelected.delete(docId);
-      } else {
-        newSelected.add(docId);
-      }
-      setSelectedFiles(newSelected);
-    }
-  };
-
-  const handleGo = () => {
-    if (selectedFiles.size > 0) {
+    if (recentDocs.length > 0) {
+      setRecentDocs(recentDocs);
+      // Simulate AI summary generation
+      const summary = `AI Summary for ${recentDocs.length} document${recentDocs.length > 1 ? 's' : ''}:\n\n${recentDocs.map(doc => `- ${doc.name}: Analyzed successfully`).join('\n')}\n\nKey findings: All documents processed. No critical issues detected.`;
+      setSummaryText(summary);
       setShowSummaryModal(true);
     }
   };
 
   const closeSummaryModal = () => {
     setShowSummaryModal(false);
-    setSummaryMode(false);
-    setSelectedFiles(new Set());
   };
 
   const cards = [
@@ -74,8 +59,8 @@ export default function HomePage({ onNavigateToVault, onNavigateToProfile }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             {/* limit logo size and ensure it doesn't push content */}
-            <img src={logoImage} alt="Vytara Logo" className="w-12 h-12 object-contain flex-shrink-0" />
-            <h1 className="text-teal-600 text-xl sm:text-2xl font-bold truncate">Vytara</h1>
+            <img src={logoImage} alt="Vytara Logo" className="w-20 h-20 object-contain flex-shrink-0" />
+            <h1 className="text-xl sm:text-2xl font-bold truncate" style={{ color: '#309898' }}>Vytara</h1>
           </div>
 
           {/* prevent this group from shrinking or wrapping offscreen */}
@@ -124,63 +109,7 @@ export default function HomePage({ onNavigateToVault, onNavigateToProfile }) {
           </button>
         </div>
 
-        {/* Documents Section */}
-        {summaryMode && (
-          <div className="mb-8">
-            <div className="bg-purple-100 border-2 border-purple-600 rounded-lg p-3 mb-4">
-              <p className="text-sm text-purple-800 flex items-center">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Click on files to select them for AI summary. {selectedFiles.size} file(s) selected.
-              </p>
-            </div>
 
-            <div className="bg-white rounded-2xl shadow-lg p-6 border-4 border-teal-200">
-              <h3 className="text-teal-600 mb-4 text-xl font-semibold">Select Documents for Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {documents.map((doc) => {
-                  const isSelected = selectedFiles.has(doc.id);
-                  return (
-                    <div
-                      key={doc.id}
-                      onClick={() => handleFileClick(doc.id)}
-                      className={`relative bg-white rounded-xl shadow p-4 border-2 transition-all cursor-pointer ${
-                        isSelected ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 mb-3">
-                        <FileText className="w-5 h-5 text-gray-600" />
-                      </div>
-                      <h4 className="text-gray-800 mb-1 text-sm font-medium">{doc.name}</h4>
-                      <p className="text-xs text-gray-500">{new Date(doc.uploadDate).toLocaleDateString()}</p>
-                      <p className="text-xs text-gray-400 mt-1 capitalize">{doc.category.replace('-', ' ')}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <button
-                  onClick={handleCancelSummary}
-                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleGo}
-                  disabled={selectedFiles.size === 0}
-                  className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 font-medium"
-                >
-                  Go ({selectedFiles.size})
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Service Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -202,7 +131,7 @@ export default function HomePage({ onNavigateToVault, onNavigateToProfile }) {
                   >
                     <Icon className="w-10 h-10" style={{ color: card.color }} />
                   </div>
-                  <h3 className="text-center font-semibold" style={{ color: card.color }}>
+                  <h3 className="text-center font-semibold">
                     {card.title}
                   </h3>
                 </div>
@@ -289,23 +218,21 @@ export default function HomePage({ onNavigateToVault, onNavigateToProfile }) {
 
             <div className="mb-6">
               <p className="text-sm text-gray-600 mb-2">
-                Analyzing {selectedFiles.size} document{selectedFiles.size !== 1 ? 's' : ''}...
+                Analyzing {recentDocs.length} document{recentDocs.length !== 1 ? 's' : ''}...
               </p>
               <div className="flex flex-wrap gap-2">
-                {documents
-                  .filter(doc => selectedFiles.has(doc.id))
-                  .map(doc => (
-                    <span key={doc.id} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
-                      {doc.name}
-                    </span>
-                  ))}
+                {recentDocs.map(doc => (
+                  <span key={doc.id} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                    {doc.name}
+                  </span>
+                ))}
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-2xl p-6 min-h-[300px] border-2 border-gray-200 flex items-center justify-center">
-              <p className="text-gray-500 italic">
-                🤖 AI summary will appear here...
-              </p>
+            <div className="bg-gray-50 rounded-2xl p-6 min-h-[300px] border-2 border-gray-200">
+              <pre className="text-gray-700 whitespace-pre-wrap">
+                {summaryText || '🤖 AI summary will appear here...'}
+              </pre>
             </div>
 
             <button
