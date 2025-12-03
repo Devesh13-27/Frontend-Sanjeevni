@@ -1,11 +1,49 @@
 import { useState } from 'react';
 import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
+import { useNavigate } from 'react-router-dom';
+import { LoginSignupModal } from './LoginSignupModal';
+import { supabase } from '../createClient'
+import { error } from 'console';
+import ConfirmationEmailPage from './ConfirmEmail';
 
 export default function SignupPage() {
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!email || !password || !confirmPassword){
+      alert("Missing info! Please Check again");
+      return;
+    }
+    if (password != confirmPassword){
+      alert("Passwords dont match! Please Check again");
+      return;
+    }
+    setLoading(true);
+    try{
+      const { error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: "http://localhost:3000/verified"
+        }
+      });
+      if (error) throw error;
+
+      alert("Sign Up Succesful");
+      navigate("/confirmemail");
+    } catch {
+      alert("Sign Up Failed");
+      console.error
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#309898]/10 via-white to-[#FF8000]/10 flex items-center justify-center p-4">
@@ -26,18 +64,7 @@ export default function SignupPage() {
             <h1 className="text-center text-[#309898] mb-2">Vytara</h1>
             <p className="text-center text-gray-600 mb-6">Create Your Account</p>
 
-            <form className="space-y-4">
-              <div>
-                <label className="block text-gray-700 mb-2">Username</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#309898] focus:outline-none transition-colors"
-                  placeholder="Choose a username"
-                />
-              </div>
-
+            <form className="space-y-4" onSubmit={handleSignup}>
               <div>
                 <label className="block text-gray-700 mb-2">Email</label>
                 <input
@@ -73,14 +100,14 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#FF8000] to-[#FF8000]/90 text-white py-3 rounded-xl hover:shadow-lg transition-all"
+                className="w-full bg-gradient-to-r from-orange-500 to-yellow-400 text-white py-3 rounded-xl hover:shadow-lg transition-allw-full bg-gradient-to-r from-[#309898] to-[#FF8000] text-white py-3 rounded-lg hover:shadow-lg transition transform hover:scale-105"
               >
-                Sign Up
+              {loading ? "Checking..." : "SignUp"}
               </button>
 
               <div className="text-center mt-4">
                 <p className="text-gray-600 mb-2">Already have an account?</p>
-                <a href="/login" className="text-[#309898] hover:underline font-medium">
+                <a href="/login" className="text-[#309898] hover:underline font-medium" onClick={() => navigate("/login     ")}>
                   Login here
                 </a>
               </div>

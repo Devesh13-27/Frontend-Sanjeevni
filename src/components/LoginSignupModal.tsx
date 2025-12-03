@@ -1,6 +1,8 @@
 import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
 import { supabase } from '../createClient';
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import { HomePage } from './HomePage';
 
 // const [users, setUsers] = useState<any[]>([]);
 //   console.log(users)
@@ -23,7 +25,7 @@ export function LoginSignupModal() {
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email, 
-      password, password,
+      password: password,
     });
 
     setLoading(false);
@@ -32,10 +34,11 @@ export function LoginSignupModal() {
       alert("Login Failed " + error.message);
     } else {
       alert("Login Successful");
+      navigate('/home');
     }
-
-    alert("Login Successful")
   }
+
+  const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-[#309898]/20 via-white to-[#FF8000]/20 flex items-center justify-center p-4">
@@ -84,6 +87,7 @@ export function LoginSignupModal() {
             <button
               type="button"
               className="text-[#309898] hover:underline"
+              onClick={() => navigate('/signup')}
             >
               Sign Up
             </button>

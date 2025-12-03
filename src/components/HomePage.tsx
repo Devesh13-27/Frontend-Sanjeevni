@@ -1,39 +1,8 @@
-import { useState } from 'react';
 import { Calendar, Users, Stethoscope, Pill, Activity, Building2, Shield, AlertCircle } from 'lucide-react';
-import { UserData, Appointment, InsurancePolicy } from '../App';
 import { motion } from 'motion/react';
 import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
-import { AppointmentsModal } from './AppointmentsModal';
-import { EmergencyContactsModal } from './EmergencyContactsModal';
-import { DoctorsModal } from './DoctorsModal';
-import { PharmacyModal } from './PharmacyModal';
-import { DiagnosticsModal } from './DiagnosticsModal';
-import { HospitalsModal } from './HospitalsModal';
-import { InsuranceModal } from './InsuranceModal';
 
-type Props = {
-  userData: UserData;
-  onNavigateToVault: () => void;
-  onNavigateToProfile: () => void;
-  appointments: Appointment[];
-  onAddAppointment: (appointment: Appointment) => void;
-  insurancePolicies: InsurancePolicy[];
-  onUpdateEmergencyContacts: (contacts: { name: string; phone: string }[]) => void;
-};
-
-type ModalType = 'appointments' | 'emergency' | 'doctors' | 'pharmacy' | 'diagnostics' | 'hospitals' | 'insurance' | null;
-
-export function HomePage({
-  userData,
-  onNavigateToVault,
-  onNavigateToProfile,
-  appointments,
-  onAddAppointment,
-  insurancePolicies,
-  onUpdateEmergencyContacts,
-}: Props) {
-  const [activeModal, setActiveModal] = useState<ModalType>(null);
-
+export function HomePage() {
   const cards = [
     {
       id: 'appointments',
@@ -100,16 +69,10 @@ export function HomePage({
             <h1 className="text-[#309898]">Vytara</h1>
           </div>
           <div className="flex items-center gap-4">
-            <button
-              onClick={onNavigateToVault}
-              className="px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
-            >
+            <button className="px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition">
               Visit Vault
             </button>
-            <button
-              onClick={onNavigateToProfile}
-              className="px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition"
-            >
+            <button className="px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition">
               Profile
             </button>
           </div>
@@ -187,7 +150,6 @@ export function HomePage({
                   transition={{ delay: card.delay, duration: 0.5 }}
                   whileHover={{ scale: 1.05, rotate: 2 }}
                   className="cursor-pointer"
-                  onClick={() => setActiveModal(card.id as ModalType)}
                 >
                   <div
                     className="bg-white rounded-2xl shadow-lg p-6 border-4 hover:shadow-2xl transition-all"
@@ -227,20 +189,20 @@ export function HomePage({
             <div>
               <h4 className="text-[#FF8000] mb-4">Quick Links</h4>
               <ul className="space-y-2 text-gray-600">
-                <li><button onClick={onNavigateToVault} className="hover:text-[#309898]">Vault</button></li>
-                <li><button onClick={onNavigateToProfile} className="hover:text-[#309898]">Profile</button></li>
-                <li><button onClick={() => setActiveModal('appointments')} className="hover:text-[#309898]">Appointments</button></li>
-                <li><button onClick={() => setActiveModal('emergency')} className="hover:text-[#309898]">Emergency Contacts</button></li>
+                <li><button className="hover:text-[#309898]">Vault</button></li>
+                <li><button className="hover:text-[#309898]">Profile</button></li>
+                <li><button className="hover:text-[#309898]">Appointments</button></li>
+                <li><button className="hover:text-[#309898]">Emergency Contacts</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-[#FF8000] mb-4">Services</h4>
               <ul className="space-y-2 text-gray-600">
-                <li><button onClick={() => setActiveModal('doctors')} className="hover:text-[#309898]">Doctors</button></li>
-                <li><button onClick={() => setActiveModal('pharmacy')} className="hover:text-[#309898]">Pharmacy</button></li>
-                <li><button onClick={() => setActiveModal('diagnostics')} className="hover:text-[#309898]">Diagnostics</button></li>
-                <li><button onClick={() => setActiveModal('hospitals')} className="hover:text-[#309898]">Hospitals</button></li>
+                <li><button className="hover:text-[#309898]">Doctors</button></li>
+                <li><button className="hover:text-[#309898]">Pharmacy</button></li>
+                <li><button className="hover:text-[#309898]">Diagnostics</button></li>
+                <li><button className="hover:text-[#309898]">Hospitals</button></li>
               </ul>
             </div>
           </div>
@@ -250,49 +212,6 @@ export function HomePage({
           </div>
         </div>
       </footer>
-
-      {/* Modals */}
-      {activeModal === 'appointments' && (
-        <AppointmentsModal
-          appointments={appointments}
-          onClose={() => setActiveModal(null)}
-          onAddAppointment={onAddAppointment}
-        />
-      )}
-      {activeModal === 'emergency' && (
-        <EmergencyContactsModal
-          contacts={userData.personalInfo.emergencyContacts}
-          onClose={() => setActiveModal(null)}
-          onUpdateContacts={onUpdateEmergencyContacts}
-        />
-      )}
-      {activeModal === 'doctors' && (
-        <DoctorsModal
-          doctors={userData.currentMedical.doctors}
-          onClose={() => setActiveModal(null)}
-        />
-      )}
-      {activeModal === 'pharmacy' && (
-        <PharmacyModal onClose={() => setActiveModal(null)} />
-      )}
-      {activeModal === 'diagnostics' && (
-        <DiagnosticsModal
-          onClose={() => setActiveModal(null)}
-          onAddAppointment={onAddAppointment}
-        />
-      )}
-      {activeModal === 'hospitals' && (
-        <HospitalsModal
-          onClose={() => setActiveModal(null)}
-          onAddAppointment={onAddAppointment}
-        />
-      )}
-      {activeModal === 'insurance' && (
-        <InsuranceModal
-          policies={insurancePolicies}
-          onClose={() => setActiveModal(null)}
-        />
-      )}
     </div>
   );
 }
