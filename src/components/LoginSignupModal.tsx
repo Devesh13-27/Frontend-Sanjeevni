@@ -3,6 +3,7 @@ import { supabase } from '../createClient';
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { HomePage } from './HomePage';
+import { Eye } from 'lucide-react';
 
 // const [users, setUsers] = useState<any[]>([]);
 //   console.log(users)
@@ -18,6 +19,7 @@ export function LoginSignupModal() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,14 +65,23 @@ export function LoginSignupModal() {
           </div>
 
           <div>
-            <label className="block text-[#309898] mb-2">Password</label>
+          <label className="block text-[#309898] mb-2">Password</label>
+
+          <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="w-full px-4 py-3 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none transition"
-              placeholder="Enter your Phone"
+              placeholder="Enter your Password"
               onChange={(e) => setPassword(e.target.value)}
             />
+
+            <Eye
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 cursor-pointer hover:text-[#309898] transition"
+            />
           </div>
+        </div>
+
 
           <button
             type="submit"
@@ -81,7 +92,7 @@ export function LoginSignupModal() {
           </button>
 
           <div className="flex justify-between text-sm mt-4">
-            <button type="button" className="text-[#FF8000] hover:underline">
+            <button type="button" className="text-[#FF8000] hover:underline" onClick={() => navigate("/forgotpassword")}>
               Forgot Password?
             </button>
             <button

@@ -1,5 +1,6 @@
 import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
 import React from "react";
+import { Link } from 'react-router-dom';
 
 export default function ConfirmationEmailPage() {
   return (
@@ -31,8 +32,8 @@ export default function ConfirmationEmailPage() {
         </div>
 
         <div className="text-center mt-6">
-          <button className="bg-gradient-to-r from-[#309898] to-[#FF8000] text-white px-6 py-3 rounded-lg hover:shadow-lg transition transform hover:scale-105">
-            Open Email App
+          <button className="bg-gradient-to-r from-[#309898] to-[#FF8000] text-white px-6 py-3 rounded-lg hover:shadow-lg transition transform hover:scale-105" onClick={() => window.location.href = "https://www.gmail.com"}>
+             Open Gmail
           </button>
 
           <p className="text-gray-600 mt-4 text-sm">

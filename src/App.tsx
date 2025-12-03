@@ -6,6 +6,8 @@ import { ProfilePage } from "./components/ProfilePage";
 import ConfirmationEmailPage from "./components/ConfirmEmail";
 import Verified from "./components/Verified";
 import { HomePage } from "./components/HomePage";
+import { ForgotPassword } from "./components/ForgotPassword";
+import { ResetPassword } from "./components/ResetPassword";
 import { useState } from "react";
 
 function App() {
@@ -37,6 +39,10 @@ function App() {
       <Route path="/verified" element={<Verified />} />
 
       <Route path="/home" element={<HomePage />} />
+
+      <Route path="/forgotpassword" element={<ForgotPassword />} />
+
+      <Route path="/resetpassword" element={<ResetPassword />} />
 
       {/* AUTHENTICATED PAGES */}
       {/* {isLoggedIn && (
