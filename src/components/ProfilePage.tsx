@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { User, Mail, Phone, Users, Activity, FileText, Heart, LogOut, Edit2, Download } from 'lucide-react';
+import { User, Mail, Phone, Activity, FileText, Heart, LogOut, Edit2, Download, Calendar, Droplet, Ruler, Weight } from 'lucide-react';
 import { UserData } from '../App';
-import logoImage from 'figma:asset/3356ef9e7b4ecad1a9839c039785983e296f414d.png';
+import logoImage from '../assets/Untitled design.png';
 import { MedicalInfoForm } from './MedicalInfoForm';
 
 type Props = {
@@ -27,113 +27,23 @@ export function ProfilePage({ userData, onNavigateToHome, onNavigateToVault, onL
         <html>
           <head>
             <title>Vytara - Medical Profile</title>
-            <style>
+             <style>
               body { font-family: Arial, sans-serif; padding: 20px; }
               h1 { color: #309898; }
               h2 { color: #FF8000; margin-top: 20px; }
-              h3 { color: #309898; }
-              .section { margin-bottom: 30px; }
               .field { margin-bottom: 10px; }
               .label { font-weight: bold; color: #309898; }
-              .value { color: #333; }
-              table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #309898; color: white; }
             </style>
           </head>
           <body>
             <h1>Vytara Medical Profile</h1>
-            <div class="section">
-              <h2>Personal Information</h2>
-              <div class="field"><span class="label">Full Name:</span> ${userData.personalInfo.fullName}</div>
-              <div class="field"><span class="label">Email:</span> ${userData.email}</div>
-              <div class="field"><span class="label">Username:</span> @${userData.username}</div>
-              <div class="field"><span class="label">Date of Birth:</span> ${new Date(userData.personalInfo.dateOfBirth).toLocaleDateString()}</div>
-              <div class="field"><span class="label">Gender:</span> ${userData.personalInfo.gender}</div>
-              <div class="field"><span class="label">Blood Group:</span> ${userData.personalInfo.bloodGroup}</div>
-              <div class="field"><span class="label">Height:</span> ${userData.personalInfo.height || 'Not specified'}</div>
-              <div class="field"><span class="label">Weight:</span> ${userData.personalInfo.weight || 'Not specified'}</div>
-              <div class="field"><span class="label">Contact Number:</span> ${userData.personalInfo.contactNumber}</div>
-            </div>
-
-            <div class="section">
-              <h3>Emergency Contacts</h3>
-              <table>
-                <tr><th>Name</th><th>Phone</th><th>Status</th></tr>
-                ${userData.personalInfo.emergencyContacts.map((contact, idx) => `
-                  <tr><td>${contact.name}</td><td>${contact.phone}</td><td>${idx === 0 ? '<strong>Primary</strong>' : ''}</td></tr>
-                `).join('')}
-              </table>
-            </div>
-
-            <div class="section">
-              <h2>Current Medical Status</h2>
-              ${userData.currentMedical.conditions.length > 0 ? `
-                <h3>Current Conditions</h3>
-                <p>${userData.currentMedical.conditions.join(', ')}</p>
-              ` : ''}
-              
-              ${userData.currentMedical.medications.length > 0 ? `
-                <h3>Current Medications</h3>
-                <table>
-                  <tr><th>Name</th><th>Dosage</th><th>Frequency</th></tr>
-                  ${userData.currentMedical.medications.map(med => `
-                    <tr><td>${med.name}</td><td>${med.dosage}</td><td>${med.frequency}</td></tr>
-                  `).join('')}
-                </table>
-              ` : ''}
-
-              ${userData.currentMedical.allergies.length > 0 ? `
-                <h3>Allergies</h3>
-                <p>${userData.currentMedical.allergies.join(', ')}</p>
-              ` : ''}
-
-              ${userData.currentMedical.doctors.length > 0 ? `
-                <h3>Current Doctors</h3>
-                <table>
-                  <tr><th>Name</th><th>Phone</th><th>Speciality</th><th>Status</th></tr>
-                  ${userData.currentMedical.doctors.map((doc, idx) => `
-                    <tr><td>${doc.name}</td><td>${doc.phone}</td><td>${doc.speciality}</td><td>${idx === 0 ? '<strong>Primary</strong>' : ''}</td></tr>
-                  `).join('')}
-                </table>
-              ` : ''}
-            </div>
-
-            <div class="section">
-              <h2>Past Medical History</h2>
-              ${userData.pastMedical.diseases.length > 0 ? `
-                <h3>Previous Diseases</h3>
-                <p>${userData.pastMedical.diseases.join(', ')}</p>
-              ` : ''}
-
-              ${userData.pastMedical.surgeries.length > 0 ? `
-                <h3>Past Surgeries</h3>
-                <table>
-                  <tr><th>Name</th><th>Date</th></tr>
-                  ${userData.pastMedical.surgeries.map(surgery => `
-                    <tr><td>${surgery.name}</td><td>${new Date(surgery.date).toLocaleDateString()}</td></tr>
-                  `).join('')}
-                </table>
-              ` : ''}
-            </div>
-
-            ${userData.familyHistory.length > 0 ? `
-              <div class="section">
-                <h2>Family Medical History</h2>
-                <table>
-                  <tr><th>Disease</th><th>Relation</th></tr>
-                  ${userData.familyHistory.map(item => `
-                    <tr><td>${item.disease}</td><td>${item.relation}</td></tr>
-                  `).join('')}
-                </table>
-              </div>
-            ` : ''}
-
+            <h2>Personal Summary</h2>
+            <div class="field"><span class="label">Name:</span> ${userData.personalInfo.fullName}</div>
+            <div class="field"><span class="label">Blood Group:</span> ${userData.personalInfo.bloodGroup}</div>
+            <p>Generated on ${new Date().toLocaleDateString()}</p>
             <script>
               window.print();
-              window.onafterprint = function() {
-                window.close();
-              };
+              window.onafterprint = function() { window.close(); };
             </script>
           </body>
         </html>
@@ -143,343 +53,295 @@ export function ProfilePage({ userData, onNavigateToHome, onNavigateToVault, onL
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#309898]/10 via-white to-[#FF8000]/10">
-      {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center justify-between mb-2 sm:mb-0">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <img src={logoImage} alt="Vytara Logo" className="w-16 h-16 sm:w-20 sm:h-20" />
-              <h1 className="text-[#309898] text-lg sm:text-2xl">Vytara<span className="hidden sm:inline"> - Profile</span></h1>
+    <div className="min-h-screen bg-[#309898] pb-10">
+      
+      {/* 1. Navbar */}
+      <header className="bg-white sticky top-0 z-40 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img 
+                src={logoImage} 
+                alt="Vytara Logo" 
+                className="w-12 h-12 object-contain" 
+              />
+              <h1 className="text-xl font-bold text-[#309898]">Vytara</h1>
             </div>
-            <div className="flex sm:hidden items-center gap-2">
-              <button
-                onClick={onNavigateToHome}
-                className="px-2 py-2 text-sm bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
+            
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={onNavigateToHome} 
+                className="hidden md:flex px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#FF8000] transition"
               >
                 Home
               </button>
-              <button
-                onClick={onLogout}
-                className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+
+              <button 
+                onClick={onNavigateToVault} 
+                className="hidden md:flex px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#309898] transition"
               >
-                <LogOut className="w-4 h-4" />
+                Visit Vault
+              </button>
+
+              <button 
+                onClick={handleExportPDF} 
+                className="hidden md:flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition shadow-sm"
+              >
+                <Download className="w-4 h-4" /> Export
+              </button>
+
+              <button 
+                onClick={onLogout} 
+                className="p-2 text-gray-400 hover:text-red-500 transition"
+              >
+                <LogOut className="w-5 h-5" />
               </button>
             </div>
-          </div>
-          <div className="hidden sm:flex items-center justify-end gap-2 lg:gap-4">
-            <button
-              onClick={onNavigateToHome}
-              className="px-3 py-2 lg:px-4 text-sm lg:text-base bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
-            >
-              Home
-            </button>
-            <button
-              onClick={onNavigateToVault}
-              className="px-3 py-2 lg:px-4 text-sm lg:text-base bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition"
-            >
-              <span className="hidden lg:inline">Visit </span>Vault
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="flex items-center gap-2 px-3 py-2 lg:px-4 text-sm lg:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden lg:inline">Export as PDF</span>
-            </button>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-3 py-2 lg:px-4 text-sm lg:text-base bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-          <div className="flex sm:hidden items-center gap-2 mt-2">
-            <button
-              onClick={onNavigateToVault}
-              className="flex-1 px-3 py-2 text-sm bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition"
-            >
-              Vault
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#309898]">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-[#309898] to-[#FF8000] rounded-full flex items-center justify-center">
-              <User className="w-12 h-12 text-white" />
-            </div>
-            <div>
-              <h2 className="text-[#309898] mb-2">{userData.personalInfo.fullName}</h2>
-              <div className="flex items-center gap-4 text-gray-600">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#FF8000]" />
-                  <span>{userData.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-[#FF8000]" />
-                  <span>@{userData.username}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Basic Personal Information */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#FF8000]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[#FF8000]">Basic Personal Information</h3>
-            <button
-              onClick={() => setShowEditForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
-            >
-              <Edit2 className="w-4 h-4" />
-              Edit
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* 2. THE HEADER GRID (Basic Info + Recent Visits) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          
+          {/* LEFT: Basic Info & Vitals & Contacts (Takes up 2/3 space) */}
+          <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between relative">
+            
+            {/* Edit Button */}
+            <button onClick={() => setShowEditForm(true)} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-[#FF8000] hover:bg-orange-50 rounded-lg transition">
+                <Edit2 className="w-4 h-4" />
             </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Full Name</label>
-              <p className="text-gray-700 break-words">{userData.personalInfo.fullName}</p>
-            </div>
-            
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Email</label>
-              <p className="text-gray-700 break-all">{userData.email}</p>
-            </div>
 
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Date of Birth</label>
-              <p className="text-gray-700 break-words">{new Date(userData.personalInfo.dateOfBirth).toLocaleDateString()}</p>
-            </div>
-            
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Gender</label>
-              <p className="text-gray-700 break-words">{userData.personalInfo.gender}</p>
-            </div>
-            
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Blood Group</label>
-              <p className="text-gray-700 break-words">{userData.personalInfo.bloodGroup}</p>
-            </div>
-            
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Height</label>
-              <p className="text-gray-700 break-words">{userData.personalInfo.height || 'Not specified'}</p>
-            </div>
-            
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Weight</label>
-              <p className="text-gray-700 break-words">{userData.personalInfo.weight || 'Not specified'}</p>
-            </div>
-            
-            <div className="overflow-hidden">
-              <label className="block text-[#309898] mb-2">Contact Number</label>
-              <p className="text-gray-700 flex items-center gap-2 break-all">
-                <Phone className="w-4 h-4 text-[#FF8000] flex-shrink-0" />
-                <span className="break-all">{userData.personalInfo.contactNumber}</span>
-              </p>
-            </div>
-          </div>
+            <div className="flex flex-col md:flex-row items-start gap-6 mb-6">
+              {/* Avatar */}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center border-4 border-white shadow-md shrink-0">
+                   <User className="w-8 h-8 text-slate-600" />
+              </div>
 
-          <div className="mt-6">
-            <label className="block text-[#309898] mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Emergency Contacts
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {userData.personalInfo.emergencyContacts.map((contact, idx) => (
-                <div key={idx} className="p-4 bg-[#309898]/5 rounded-lg border-2 border-[#309898]/20 overflow-hidden">
-                  <div className="flex items-center justify-between mb-1 gap-2">
-                    <p className="text-[#309898] break-words flex-1 min-w-0">{contact.name}</p>
-                    {idx === 0 && <span className="text-xs bg-[#FF8000] text-white px-2 py-0.5 rounded flex-shrink-0">Primary</span>}
+              <div className="flex-1 grid md:grid-cols-2 gap-6 w-full">
+                {/* Identity Column */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-900">{userData.personalInfo.fullName}</h2>
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wide rounded-full">
+                      {userData.personalInfo.gender}
+                    </span>
                   </div>
-                  <p className="text-gray-600 text-sm flex items-center gap-2 break-all">
-                    <Phone className="w-3 h-3 flex-shrink-0" />
-                    <span className="break-all">{contact.phone}</span>
+                  <p className="text-gray-400 text-xs">ID: @{userData.username}</p>
+                </div>
+
+                {/* Contact Details Column */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Mail className="w-4 h-4 text-gray-400" /> 
+                    <span className="truncate">{userData.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Phone className="w-4 h-4 text-gray-400" /> 
+                    <span>{userData.personalInfo.contactNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4 text-gray-400" /> 
+                    <span>{new Date(userData.personalInfo.dateOfBirth).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vitals Strip */}
+            <div className="grid grid-cols-3 gap-4 bg-gray-50 px-6 py-4 rounded-xl border border-gray-100">
+               <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Droplet className="w-3 h-3" /> Blood
                   </p>
-                </div>
-              ))}
+                  <p className="text-lg font-bold text-gray-800">{userData.personalInfo.bloodGroup}</p>
+               </div>
+               <div className="border-l border-gray-200 pl-6">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Ruler className="w-3 h-3" /> Height
+                  </p>
+                  <p className="text-lg font-bold text-gray-800">{userData.personalInfo.height || '--'} <span className="text-xs text-gray-400 font-normal">cm</span></p>
+               </div>
+               <div className="border-l border-gray-200 pl-6">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Weight className="w-3 h-3" /> Weight
+                  </p>
+                  <p className="text-lg font-bold text-gray-800">{userData.personalInfo.weight || '--'} <span className="text-xs text-gray-400 font-normal">kg</span></p>
+               </div>
             </div>
           </div>
-        </div>
 
-        {/* Current Medical Status */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#309898]">
-          <h3 className="text-[#309898] mb-6 flex items-center gap-2">
-            <Activity className="w-6 h-6" />
-            Current Medical Status
-          </h3>
-          
-          {userData.currentMedical.conditions.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#FF8000] mb-2">Current Conditions</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.currentMedical.conditions.map((condition, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#FF8000]/10 text-[#FF8000] rounded-lg break-words">
-                    {condition}
-                  </span>
-                ))}
-              </div>
+          {/* RIGHT: Recent Visits */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                 <Activity className="w-4 h-4 text-blue-500"/> Recent Visits
+              </h3>
+              <button className="text-xs text-blue-600 hover:underline">View All</button>
             </div>
-          )}
-
-          {userData.currentMedical.medications.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#FF8000] mb-2">Current Medications</label>
-              <div className="space-y-2">
-                {userData.currentMedical.medications.map((med, idx) => (
-                  <div key={idx} className="p-3 bg-[#309898]/5 rounded-lg border-l-4 border-[#309898] overflow-hidden">
-                    <p className="text-[#309898] break-words">{med.name}</p>
-                    <p className="text-sm text-gray-600 break-words">{med.dosage} - {med.frequency}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.currentMedical.allergies.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#FF8000] mb-2">Allergies</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.currentMedical.allergies.map((allergy, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-red-100 text-red-700 rounded-lg break-words">
-                    {allergy}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.currentMedical.treatments.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#FF8000] mb-2">Ongoing Treatments</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.currentMedical.treatments.map((treatment, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#309898]/10 text-[#309898] rounded-lg break-words">
-                    {treatment}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.currentMedical.doctors.length > 0 && (
-            <div className="overflow-hidden">
-              <label className="block text-[#FF8000] mb-2">Current Doctors</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {userData.currentMedical.doctors.map((doctor, idx) => (
-                  <div key={idx} className="p-3 bg-[#FF8000]/5 rounded-lg border-l-4 border-[#FF8000] overflow-hidden">
-                    <div className="flex items-center justify-between mb-1 gap-2">
-                      <p className="text-[#FF8000] break-words flex-1 min-w-0">{doctor.name}</p>
-                      {idx === 0 && <span className="text-xs bg-[#309898] text-white px-2 py-0.5 rounded flex-shrink-0">Primary</span>}
-                    </div>
-                    <p className="text-sm text-gray-600 flex items-center gap-2 break-all">
-                      <Phone className="w-3 h-3 flex-shrink-0" />
-                      <span className="break-all">{doctor.phone}</span>
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1 break-words">
-                      <span className="font-semibold">Speciality:</span> {doctor.speciality}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Past Medical History */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#FF8000]">
-          <h3 className="text-[#FF8000] mb-6 flex items-center gap-2">
-            <FileText className="w-6 h-6" />
-            Past Medical History
-          </h3>
-          
-          {userData.pastMedical.diseases.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#309898] mb-2">Previous Diseases</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.pastMedical.diseases.map((disease, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#309898]/10 text-[#309898] rounded-lg break-words">
-                    {disease}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.pastMedical.surgeries.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#309898] mb-2">Past Surgeries</label>
-              <div className="space-y-2">
-                {userData.pastMedical.surgeries.map((surgery, idx) => (
-                  <div key={idx} className="p-3 bg-[#FF8000]/5 rounded-lg border-l-4 border-[#FF8000] overflow-hidden">
-                    <p className="text-[#FF8000] break-words">{surgery.name}</p>
-                    <p className="text-sm text-gray-600 break-words">{new Date(surgery.date).toLocaleDateString()}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.pastMedical.hospitalizations.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#309898] mb-2">Hospitalizations</label>
-              <div className="space-y-2">
-                {userData.pastMedical.hospitalizations.map((hosp, idx) => (
-                  <div key={idx} className="p-3 bg-[#309898]/5 rounded-lg border-l-4 border-[#309898] overflow-hidden">
-                    <p className="text-[#309898] break-words">{hosp.reason}</p>
-                    <p className="text-sm text-gray-600 break-words">{new Date(hosp.date).toLocaleDateString()}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.pastMedical.injuries.length > 0 && (
-            <div className="mb-4 overflow-hidden">
-              <label className="block text-[#309898] mb-2">Past Injuries</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.pastMedical.injuries.map((injury, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#FF8000]/10 text-[#FF8000] rounded-lg break-words">
-                    {injury}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Family Medical History */}
-        {userData.familyHistory.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-lg p-8 border-4 border-[#309898]">
-            <h3 className="text-[#309898] mb-6 flex items-center gap-2">
-              <Heart className="w-6 h-6" />
-              Family Medical History
-            </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {userData.familyHistory.map((item, idx) => (
-                <div key={idx} className="p-4 bg-[#309898]/5 rounded-lg border-2 border-[#309898]/20 overflow-hidden">
-                  <p className="text-[#309898] break-words">{item.disease}</p>
-                  <p className="text-sm text-gray-600 break-words">{item.relation}</p>
+            <div className="flex-1 overflow-y-auto space-y-3 max-h-[200px] pr-2 custom-scrollbar">
+              <div className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition cursor-pointer group">
+                <div className="w-10 h-10 rounded-lg bg-green-50 group-hover:bg-green-100 flex flex-col items-center justify-center text-green-700 shrink-0 transition">
+                   <span className="text-[10px] font-bold uppercase">Nov</span>
+                   <span className="text-sm font-bold leading-none">24</span>
                 </div>
-              ))}
+                <div>
+                   <p className="text-sm font-bold text-gray-900">General Checkup</p>
+                   <p className="text-xs text-gray-500">Dr. Sarah Smith</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition cursor-pointer group">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex flex-col items-center justify-center text-blue-700 shrink-0 transition">
+                   <span className="text-[10px] font-bold uppercase">Oct</span>
+                   <span className="text-sm font-bold leading-none">12</span>
+                </div>
+                <div>
+                   <p className="text-sm font-bold text-gray-900">Dental Cleaning</p>
+                   <p className="text-xs text-gray-500">Dr. John Doe</p>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
+
+
+        {/* 3. THE DASHBOARD GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* LEFT COLUMN (Wider - History & Status) */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            
+            {/* Current Medical Status */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[#309898]" />
+                <h3 className="font-bold text-gray-800">Current Medical Status</h3>
+              </div>
+              <div className="p-6 grid md:grid-cols-2 gap-6">
+                 {/* Conditions */}
+                 <div>
+                    <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Active Conditions</label>
+                    <div className="flex flex-wrap gap-2">
+                      {userData.currentMedical.conditions.length > 0 ? 
+                        userData.currentMedical.conditions.map((c, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100">{c}</span>
+                        )) : <span className="text-gray-400 text-sm">No active conditions</span>
+                      }
+                    </div>
+                 </div>
+                 {/* Allergies */}
+                 <div>
+                    <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Allergies</label>
+                    <div className="flex flex-wrap gap-2">
+                      {userData.currentMedical.allergies.length > 0 ? 
+                        userData.currentMedical.allergies.map((a, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium border border-yellow-100">{a}</span>
+                        )) : <span className="text-gray-400 text-sm">No allergies recorded</span>
+                      }
+                    </div>
+                 </div>
+                 {/* Medications */}
+                 <div className="md:col-span-2">
+                    <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Current Medications</label>
+                    <div className="space-y-2">
+                      {userData.currentMedical.medications.length > 0 ? 
+                        userData.currentMedical.medications.map((med, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                             <span className="font-medium text-gray-800">{med.name}</span>
+                             <span className="text-sm text-gray-500">{med.dosage} • {med.frequency}</span>
+                          </div>
+                        )) : <div className="text-sm text-gray-400 italic">No medications</div>
+                      }
+                    </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Past History */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+               <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-purple-500" />
+                <h3 className="font-bold text-gray-800">History & Surgeries</h3>
+              </div>
+              <div className="p-6">
+                 {userData.pastMedical.surgeries.length > 0 ? (
+                   <div className="space-y-4">
+                     {userData.pastMedical.surgeries.map((surg, i) => (
+                       <div key={i} className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-xs shrink-0">
+                             {new Date(surg.date).getFullYear()}
+                          </div>
+                          <div>
+                            <p className="text-gray-900 font-medium">{surg.name}</p>
+                            <p className="text-gray-500 text-sm">{new Date(surg.date).toLocaleDateString()}</p>
+                          </div>
+                       </div>
+                     ))}
+                   </div>
+                 ) : (
+                   <p className="text-gray-400 text-sm">No surgery history recorded.</p>
+                 )}
+
+                 {/* Divider */}
+                 <div className="my-6 border-t border-gray-100"></div>
+
+                 <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Past Diseases</label>
+                 <div className="flex flex-wrap gap-2">
+                    {userData.pastMedical.diseases.map((d, i) => (
+                       <span key={i} className="text-gray-600 bg-gray-100 px-3 py-1 rounded-md text-sm">{d}</span>
+                    ))}
+                 </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT COLUMN (Medical Team & Emergency) */}
+          <div className="flex flex-col gap-6">
+            
+            {/* Doctors */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+               <h3 className="font-bold text-gray-800 mb-4">Medical Team</h3>
+               <div className="space-y-4">
+                 {userData.currentMedical.doctors.map((doc, i) => (
+                   <div key={i} className="flex gap-3 items-start">
+                      <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs">
+                          Dr
+                      </div>
+                      <div>
+                          <p className="text-sm font-bold text-gray-900">{doc.name}</p>
+                          <p className="text-xs text-teal-600 font-medium">{doc.speciality}</p>
+                          <p className="text-xs text-gray-400 mt-1">{doc.phone}</p>
+                      </div>
+                   </div>
+                 ))}
+               </div>
+            </div>
+
+            {/* Emergency Contacts */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+               <h3 className="font-bold text-gray-800 mb-4 text-red-500 flex items-center gap-2">
+                 <Heart className="w-4 h-4" /> Emergency
+               </h3>
+               <div className="space-y-3">
+                 {userData.personalInfo.emergencyContacts.map((contact, i) => (
+                   <div key={i} className="p-3 bg-red-50 rounded-lg border border-red-100">
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="font-bold text-gray-900 text-sm">{contact.name}</p>
+                        {i===0 && <span className="text-[10px] bg-red-200 text-red-800 px-1.5 rounded">Primary</span>}
+                      </div>
+                      <p className="text-xs text-gray-600">{contact.phone}</p>
+                   </div>
+                 ))}
+               </div>
+            </div>
+
+          </div>
+        </div>
       </main>
 
       {/* Edit Form Modal */}

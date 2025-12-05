@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import HomePage from './components/HomePage';
+import { HomePage } from './components/HomePage';
 import { LoginSignupModal } from './components/LoginSignupModal';
 import { VaultPage } from './components/VaultPage';
 import { ProfilePage } from './components/ProfilePage';
