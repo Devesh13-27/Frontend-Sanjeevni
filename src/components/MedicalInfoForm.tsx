@@ -1,815 +1,219 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
-import { UserData } from '../App';
-import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import logoImage from "figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../createClient";
+import { useEffect, useState } from "react";
 
-type Props = {
-  onComplete: (data: UserData) => void;
-  onClose?: () => void;
-  initialData?: UserData;
-};
+export function MedicalInfoFormUI() {
 
-export function MedicalInfoForm({ onComplete, onClose, initialData }: Props) {
-  const [currentSection, setCurrentSection] = useState(1);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [userId , setUserId] = useState('');
 
-  // Section 1: Basic Personal Information
-  const [personalInfo, setPersonalInfo] = useState({
-    fullName: initialData?.personalInfo.fullName || '',
-    dateOfBirth: initialData?.personalInfo.dateOfBirth || '',
-    gender: initialData?.personalInfo.gender || '',
-    bloodGroup: initialData?.personalInfo.bloodGroup || '',
-    height: initialData?.personalInfo.height || '',
-    weight: initialData?.personalInfo.weight || '',
-    contactNumber: initialData?.personalInfo.contactNumber || '',
-    emergencyContacts: initialData?.personalInfo.emergencyContacts || [{ name: '', phone: '' }],
-  });
-
-  // Section 2: Current Medical Status
-  const [currentMedical, setCurrentMedical] = useState({
-    conditions: initialData?.currentMedical.conditions || [''],
-    medications: initialData?.currentMedical.medications || [{ name: '', dosage: '', frequency: '' }],
-    allergies: initialData?.currentMedical.allergies || [''],
-    treatments: initialData?.currentMedical.treatments || [''],
-    doctors: initialData?.currentMedical.doctors || [{ name: '', phone: '' }],
-  });
-
-  // Section 3: Past Medical History
-  const [pastMedical, setPastMedical] = useState({
-    diseases: initialData?.pastMedical.diseases || [''],
-    surgeries: initialData?.pastMedical.surgeries || [{ name: '', date: '' }],
-    hospitalizations: initialData?.pastMedical.hospitalizations || [{ reason: '', date: '' }],
-    injuries: initialData?.pastMedical.injuries || [''],
-    childhoodIllnesses: initialData?.pastMedical.childhoodIllnesses || [''],
-    pastMedications: initialData?.pastMedical.pastMedications || [''],
-    longTermTreatments: initialData?.pastMedical.longTermTreatments || [''],
-  });
-
-  // Section 4: Family Medical History
-  const [familyHistory, setFamilyHistory] = useState(initialData?.familyHistory || [{ disease: '', relation: '' }]);
-
-  const validateSection = (section: number) => {
-    const newErrors: Record<string, string> = {};
-    
-    if (section === 1) {
-      if (!personalInfo.fullName.trim()) newErrors.fullName = 'Full name is required';
-      if (!personalInfo.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
-      if (!personalInfo.gender) newErrors.gender = 'Gender is required';
-      if (!personalInfo.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
-      if (!personalInfo.contactNumber.trim()) newErrors.contactNumber = 'Contact number is required';
+  useEffect(() => {
+    async function getUser() {
+      const { data } = await supabase.auth.getUser();
+      if (data.user){
+        setUserId(data.user.id)
+      } 
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    getUser();
+  }, [])
+  
+  const navigate = useNavigate();
 
-  const handleNext = () => {
-    if (validateSection(currentSection)) {
-      if (currentSection < 4) {
-        setCurrentSection(currentSection + 1);
-      }
-    }
-  };
+  const [fullName, setFullName] = useState("");
+  const [dob, setDob] = useState("");
+  const [gender, setGender] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [emergencyContact, setEmergencyContact] = useState([
+    { name: "", phone: "", relation: "" },
+  ]);
 
-  const handlePrevious = () => {
-    if (currentSection > 1) {
-      setCurrentSection(currentSection - 1);
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleSubmit = () => {
-    const data: UserData = {
-      username: initialData?.username || '',
-      email: initialData?.email || '',
-      personalInfo: {
-        ...personalInfo,
-        emergencyContacts: personalInfo.emergencyContacts.filter(c => c.name && c.phone),
-      },
-      currentMedical: {
-        conditions: currentMedical.conditions.filter(c => c.trim()),
-        medications: currentMedical.medications.filter(m => m.name.trim()),
-        allergies: currentMedical.allergies.filter(a => a.trim()),
-        treatments: currentMedical.treatments.filter(t => t.trim()),
-        doctors: currentMedical.doctors.filter(d => d.name.trim() && d.phone.trim()),
-      },
-      pastMedical: {
-        diseases: pastMedical.diseases.filter(d => d.trim()),
-        surgeries: pastMedical.surgeries.filter(s => s.name.trim()),
-        hospitalizations: pastMedical.hospitalizations.filter(h => h.reason.trim()),
-        injuries: pastMedical.injuries.filter(i => i.trim()),
-        childhoodIllnesses: pastMedical.childhoodIllnesses.filter(c => c.trim()),
-        pastMedications: pastMedical.pastMedications.filter(m => m.trim()),
-        longTermTreatments: pastMedical.longTermTreatments.filter(t => t.trim()),
-      },
-      familyHistory: familyHistory.filter(f => f.disease.trim() && f.relation.trim()),
+    const birthDate = new Date(dob);
+
+    const personalData = {
+      fullName,
+      dob: birthDate.toString(),
+      gender,
+      bloodGroup,
+      height,
+      weight,
+      contactNumber,
+      emergencyContact,
     };
-    
-    onComplete(data);
-  };
 
-  const addEmergencyContact = () => {
-    if (personalInfo.emergencyContacts.length < 5) {
-      setPersonalInfo({
-        ...personalInfo,
-        emergencyContacts: [...personalInfo.emergencyContacts, { name: '', phone: '' }],
-      });
-    }
-  };
+    const { error } = await supabase
+      .from("profiles")
+      .insert({
+        uid: userId, 
+        personal: personalData 
+      })
 
-  const removeEmergencyContact = (index: number) => {
-    const newContacts = personalInfo.emergencyContacts.filter((_, i) => i !== index);
-    setPersonalInfo({ ...personalInfo, emergencyContacts: newContacts });
-  };
-
-  const addField = (section: string, field: string) => {
-    if (section === 'current') {
-      if (field === 'conditions') {
-        setCurrentMedical({ ...currentMedical, conditions: [...currentMedical.conditions, ''] });
-      } else if (field === 'medications') {
-        setCurrentMedical({
-          ...currentMedical,
-          medications: [...currentMedical.medications, { name: '', dosage: '', frequency: '' }],
-        });
-      } else if (field === 'allergies') {
-        setCurrentMedical({ ...currentMedical, allergies: [...currentMedical.allergies, ''] });
-      } else if (field === 'treatments') {
-        setCurrentMedical({ ...currentMedical, treatments: [...currentMedical.treatments, ''] });
-      } else if (field === 'doctors') {
-        setCurrentMedical({ ...currentMedical, doctors: [...currentMedical.doctors, { name: '', phone: '' }] });
-      }
-    } else if (section === 'past') {
-      if (field === 'diseases') {
-        setPastMedical({ ...pastMedical, diseases: [...pastMedical.diseases, ''] });
-      } else if (field === 'surgeries') {
-        setPastMedical({
-          ...pastMedical,
-          surgeries: [...pastMedical.surgeries, { name: '', date: '' }],
-        });
-      } else if (field === 'hospitalizations') {
-        setPastMedical({
-          ...pastMedical,
-          hospitalizations: [...pastMedical.hospitalizations, { reason: '', date: '' }],
-        });
-      } else if (field === 'injuries') {
-        setPastMedical({ ...pastMedical, injuries: [...pastMedical.injuries, ''] });
-      } else if (field === 'childhoodIllnesses') {
-        setPastMedical({
-          ...pastMedical,
-          childhoodIllnesses: [...pastMedical.childhoodIllnesses, ''],
-        });
-      } else if (field === 'pastMedications') {
-        setPastMedical({
-          ...pastMedical,
-          pastMedications: [...pastMedical.pastMedications, ''],
-        });
-      } else if (field === 'longTermTreatments') {
-        setPastMedical({
-          ...pastMedical,
-          longTermTreatments: [...pastMedical.longTermTreatments, ''],
-        });
-      }
-    } else if (section === 'family') {
-      setFamilyHistory([...familyHistory, { disease: '', relation: '' }]);
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
+      navigate("/healthinfoform");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-[#309898]/20 via-white to-[#FF8000]/20 flex items-center justify-center p-4 overflow-y-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-lg"
+    >
       <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 my-8 border-4 border-[#309898]">
+
+        {/* Logo */}
         <div className="flex justify-center mb-4">
           <img src={logoImage} alt="Vytara Logo" className="w-16 h-16" />
         </div>
-        
+
         <h2 className="text-center text-[#309898] mb-2">Medical Information</h2>
-        <p className="text-center text-gray-600 mb-6">Section {currentSection}/4</p>
+        <p className="text-center text-gray-600 mb-6">Section 1/4</p>
 
-        <div className="min-h-[500px]">
-          {/* Section 1: Basic Personal Information */}
-          {currentSection === 1 && (
-            <div className="space-y-4">
-              <h3 className="text-[#FF8000] mb-4">Basic Personal Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-[#309898] mb-2">Full Name *</label>
-                  <input
-                    type="text"
-                    value={personalInfo.fullName}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  />
-                  {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
-                </div>
+        {/* Main Container */}
+        <div className="min-h-[500px] space-y-6">
 
-                <div>
-                  <label className="block text-[#309898] mb-2">Date of Birth *</label>
-                  <input
-                    type="date"
-                    value={personalInfo.dateOfBirth}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, dateOfBirth: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  />
-                  {errors.dateOfBirth && <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>}
-                </div>
+          <div className="space-y-4">
+            <h3 className="text-[#FF8000] mb-4">Basic Personal Information</h3>
 
-                <div>
-                  <label className="block text-[#309898] mb-2">Gender *</label>
-                  <select
-                    value={personalInfo.gender}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, gender: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <div>
-                  <label className="block text-[#309898] mb-2">Blood Group *</label>
-                  <select
-                    value={personalInfo.bloodGroup}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, bloodGroup: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </select>
-                  {errors.bloodGroup && <p className="text-red-500 text-sm mt-1">{errors.bloodGroup}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-[#309898] mb-2">Height</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 5'8"
-                    value={personalInfo.height}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, height: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#309898] mb-2">Weight</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 70 kg"
-                    value={personalInfo.weight}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, weight: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#309898] mb-2">Contact Number *</label>
-                  <input
-                    type="tel"
-                    value={personalInfo.contactNumber}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, contactNumber: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                  />
-                  {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>}
-                </div>
+              {/* Full Name */}
+              <div className="md:col-span-2">
+                <label className="block text-[#309898] mb-2">Full Name *</label>
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                />
               </div>
 
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Emergency Contacts</label>
-                  <button
-                    type="button"
-                    onClick={addEmergencyContact}
-                    disabled={personalInfo.emergencyContacts.length >= 5}
-                    className="text-[#FF8000] hover:text-[#309898] disabled:text-gray-400 disabled:cursor-not-allowed"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {personalInfo.emergencyContacts.map((contact, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Name"
-                      value={contact.name}
-                      onChange={(e) => {
-                        const newContacts = [...personalInfo.emergencyContacts];
-                        newContacts[index].name = e.target.value;
-                        setPersonalInfo({ ...personalInfo, emergencyContacts: newContacts });
-                      }}
-                      className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone"
-                      value={contact.phone}
-                      onChange={(e) => {
-                        const newContacts = [...personalInfo.emergencyContacts];
-                        newContacts[index].phone = e.target.value;
-                        setPersonalInfo({ ...personalInfo, emergencyContacts: newContacts });
-                      }}
-                      className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    {personalInfo.emergencyContacts.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeEmergencyContact(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+              {/* DOB */}
+              <div>
+                <label className="block text-[#309898] mb-2">Date of Birth *</label>
+                <input
+                  type="date"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                />
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block text-[#309898] mb-2">Gender *</label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                >
+                  <option>Select Gender</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              {/* Blood Group */}
+              <div>
+                <label className="block text-[#309898] mb-2">Blood Group *</label>
+                <select
+                  value={bloodGroup}
+                  onChange={(e) => setBloodGroup(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                >
+                  <option>Select Blood Group</option>
+                  <option>A+</option>
+                  <option>A−</option>
+                  <option>B+</option>
+                  <option>B−</option>
+                  <option>AB+</option>
+                  <option>AB−</option>
+                  <option>O+</option>
+                  <option>O−</option>
+                </select>
+              </div>
+
+              {/* Height */}
+              <div>
+                <label className="block text-[#309898] mb-2">Height</label>
+                <input
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  placeholder="5'8"
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                />
+              </div>
+
+              {/* Weight */}
+              <div>
+                <label className="block text-[#309898] mb-2">Weight</label>
+                <input
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="70 kg"
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                />
+              </div>
+
+              {/* Contact Number */}
+              <div>
+                <label className="block text-[#309898] mb-2">Contact Number *</label>
+                <input
+                  type="tel"
+                  value={contactNumber}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                />
               </div>
             </div>
-          )}
 
-          {/* Section 2: Current Medical Status */}
-          {currentSection === 2 && (
-            <div className="space-y-4">
-              <h3 className="text-[#FF8000] mb-4">Current Medical Status</h3>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Current Diagnosed Conditions</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('current', 'conditions')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {currentMedical.conditions.map((condition, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter condition"
-                    value={condition}
-                    onChange={(e) => {
-                      const newConditions = [...currentMedical.conditions];
-                      newConditions[index] = e.target.value;
-                      setCurrentMedical({ ...currentMedical, conditions: newConditions });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
+            {/* Emergency Contacts */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[#309898]">Emergency Contacts</label>
+                <button type="button" className="text-[#FF8000]">
+                  <Plus className="w-5 h-5" />
+                </button>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Current Medications</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('current', 'medications')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {currentMedical.medications.map((med, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Name"
-                      value={med.name}
-                      onChange={(e) => {
-                        const newMeds = [...currentMedical.medications];
-                        newMeds[index].name = e.target.value;
-                        setCurrentMedical({ ...currentMedical, medications: newMeds });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Dosage"
-                      value={med.dosage}
-                      onChange={(e) => {
-                        const newMeds = [...currentMedical.medications];
-                        newMeds[index].dosage = e.target.value;
-                        setCurrentMedical({ ...currentMedical, medications: newMeds });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Frequency"
-                      value={med.frequency}
-                      onChange={(e) => {
-                        const newMeds = [...currentMedical.medications];
-                        newMeds[index].frequency = e.target.value;
-                        setCurrentMedical({ ...currentMedical, medications: newMeds });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Allergies</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('current', 'allergies')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {currentMedical.allergies.map((allergy, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter allergy"
-                    value={allergy}
-                    onChange={(e) => {
-                      const newAllergies = [...currentMedical.allergies];
-                      newAllergies[index] = e.target.value;
-                      setCurrentMedical({ ...currentMedical, allergies: newAllergies });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Ongoing Treatments / Therapies</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('current', 'treatments')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {currentMedical.treatments.map((treatment, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter treatment"
-                    value={treatment}
-                    onChange={(e) => {
-                      const newTreatments = [...currentMedical.treatments];
-                      newTreatments[index] = e.target.value;
-                      setCurrentMedical({ ...currentMedical, treatments: newTreatments });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Current Doctor / Physician</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('current', 'doctors')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {currentMedical.doctors.map((doctor, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Name"
-                      value={doctor.name}
-                      onChange={(e) => {
-                        const newDoctors = [...currentMedical.doctors];
-                        newDoctors[index].name = e.target.value;
-                        setCurrentMedical({ ...currentMedical, doctors: newDoctors });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone"
-                      value={doctor.phone}
-                      onChange={(e) => {
-                        const newDoctors = [...currentMedical.doctors];
-                        newDoctors[index].phone = e.target.value;
-                        setCurrentMedical({ ...currentMedical, doctors: newDoctors });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                  </div>
-                ))}
+              <div className="flex gap-2 mb-2">
+                <input placeholder="Name" className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30" />
+                <input placeholder="Phone" className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30" />
+                <button type="button" className="text-red-500">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
-          )}
 
-          {/* Section 3: Past Medical History */}
-          {currentSection === 3 && (
-            <div className="space-y-4">
-              <h3 className="text-[#FF8000] mb-4">Past Medical History</h3>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Previous Diagnosed Diseases</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'diseases')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.diseases.map((disease, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter disease"
-                    value={disease}
-                    onChange={(e) => {
-                      const newDiseases = [...pastMedical.diseases];
-                      newDiseases[index] = e.target.value;
-                      setPastMedical({ ...pastMedical, diseases: newDiseases });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Past Surgeries</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'surgeries')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.surgeries.map((surgery, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Surgery name"
-                      value={surgery.name}
-                      onChange={(e) => {
-                        const newSurgeries = [...pastMedical.surgeries];
-                        newSurgeries[index].name = e.target.value;
-                        setPastMedical({ ...pastMedical, surgeries: newSurgeries });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="date"
-                      value={surgery.date}
-                      onChange={(e) => {
-                        const newSurgeries = [...pastMedical.surgeries];
-                        newSurgeries[index].date = e.target.value;
-                        setPastMedical({ ...pastMedical, surgeries: newSurgeries });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Hospitalizations</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'hospitalizations')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.hospitalizations.map((hosp, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Reason"
-                      value={hosp.reason}
-                      onChange={(e) => {
-                        const newHosps = [...pastMedical.hospitalizations];
-                        newHosps[index].reason = e.target.value;
-                        setPastMedical({ ...pastMedical, hospitalizations: newHosps });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="date"
-                      value={hosp.date}
-                      onChange={(e) => {
-                        const newHosps = [...pastMedical.hospitalizations];
-                        newHosps[index].date = e.target.value;
-                        setPastMedical({ ...pastMedical, hospitalizations: newHosps });
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Past Injuries</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'injuries')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.injuries.map((injury, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter injury"
-                    value={injury}
-                    onChange={(e) => {
-                      const newInjuries = [...pastMedical.injuries];
-                      newInjuries[index] = e.target.value;
-                      setPastMedical({ ...pastMedical, injuries: newInjuries });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Childhood Illnesses</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'childhoodIllnesses')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.childhoodIllnesses.map((illness, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter illness"
-                    value={illness}
-                    onChange={(e) => {
-                      const newIllnesses = [...pastMedical.childhoodIllnesses];
-                      newIllnesses[index] = e.target.value;
-                      setPastMedical({ ...pastMedical, childhoodIllnesses: newIllnesses });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Past Medications Taken</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'pastMedications')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.pastMedications.map((med, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter medication"
-                    value={med}
-                    onChange={(e) => {
-                      const newMeds = [...pastMedical.pastMedications];
-                      newMeds[index] = e.target.value;
-                      setPastMedical({ ...pastMedical, pastMedications: newMeds });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Long-term Treatments Previously Taken</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('past', 'longTermTreatments')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {pastMedical.longTermTreatments.map((treatment, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Enter treatment"
-                    value={treatment}
-                    onChange={(e) => {
-                      const newTreatments = [...pastMedical.longTermTreatments];
-                      newTreatments[index] = e.target.value;
-                      setPastMedical({ ...pastMedical, longTermTreatments: newTreatments });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none mb-2"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 4: Family Medical History */}
-          {currentSection === 4 && (
-            <div className="space-y-4">
-              <h3 className="text-[#FF8000] mb-4">Family Medical History</h3>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-[#309898]">Diseases and Relation</label>
-                  <button
-                    type="button"
-                    onClick={() => addField('family', '')}
-                    className="text-[#FF8000] hover:text-[#309898]"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-                {familyHistory.map((item, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Disease"
-                      value={item.disease}
-                      onChange={(e) => {
-                        const newHistory = [...familyHistory];
-                        newHistory[index].disease = e.target.value;
-                        setFamilyHistory(newHistory);
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Relation (e.g., Father, Mother)"
-                      value={item.relation}
-                      onChange={(e) => {
-                        const newHistory = [...familyHistory];
-                        newHistory[index].relation = e.target.value;
-                        setFamilyHistory(newHistory);
-                      }}
-                      className="px-4 py-2 rounded-lg border-2 border-[#309898]/30 focus:border-[#FF8000] focus:outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8">
+        <div className="flex justify-between mt-8">
           <button
             type="button"
-            onClick={handlePrevious}
-            disabled={currentSection === 1}
-            className="flex items-center gap-2 px-6 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+            onClick={() => navigate("/signup")}
+            className="flex items-center gap-2 text-[#309898] cursor-pointer"
           >
-            <ChevronLeft className="w-5 h-5" />
-            Previous
+            <ChevronLeft /> Previous
           </button>
 
-          <div className="text-[#309898]">
-            {currentSection} / 4
-          </div>
-
-          {currentSection < 4 ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              className="flex items-center gap-2 px-6 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
-            >
-              Next
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-[#309898] to-[#FF8000] text-white rounded-lg hover:shadow-lg transition transform hover:scale-105"
-            >
-              Submit
-            </button>
-          )}
+          <button
+            type="submit"
+            className="flex items-center gap-2 bg-[#FF8000] text-white px-6 py-2 rounded-lg hover:bg-[#309898] cursor-pointer"
+          >
+            Next <ChevronRight />
+          </button>
         </div>
+
       </div>
-    </div>
+    </form>
   );
 }

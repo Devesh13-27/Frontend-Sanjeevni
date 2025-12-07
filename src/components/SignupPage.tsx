@@ -45,6 +45,21 @@ export default function SignupPage() {
     }
   }
 
+  const signInWithGoogle = async(e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:3000/medicalform",
+          
+      },
+    });
+  
+    if (error){
+      alert("Error: " + error.message);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#309898]/10 via-white to-[#FF8000]/10 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -100,9 +115,23 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-500 to-yellow-400 text-white py-3 rounded-xl hover:shadow-lg transition-allw-full bg-gradient-to-r from-[#309898] to-[#FF8000] text-white py-3 rounded-lg hover:shadow-lg transition transform hover:scale-105"
+                className="w-full bg-gradient-to-r from-orange-500 to-yellow-400 text-white py-3 rounded-xl hover:shadow-lg transition-allw-full bg-gradient-to-r from-[#309898] to-[#FF8000] text-white py-3 rounded-lg hover:shadow-lg transition transform hover:scale-105 cursor-pointer"
               >
               {loading ? "Checking..." : "SignUp"}
+              </button>
+
+              <button
+                onClick={signInWithGoogle}
+                className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-xl py-3 bg-white hover:bg-gray-50 transition-all shadow-sm cursor-pointer"
+              >
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Sign in with Google
+                </span>
               </button>
 
               <div className="text-center mt-4">

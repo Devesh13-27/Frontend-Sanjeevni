@@ -8,6 +8,8 @@ import Verified from "./components/Verified";
 import { HomePage } from "./components/HomePage";
 import { ForgotPassword } from "./components/ForgotPassword";
 import { ResetPassword } from "./components/ResetPassword";
+import { MedicalInfoFormUI } from "./components/MedicalInfoForm";
+import HealthInfoFormUI from "./components/CurrentMedicalStatus";
 import { useState } from "react";
 
 function App() {
@@ -43,6 +45,11 @@ function App() {
       <Route path="/forgotpassword" element={<ForgotPassword />} />
 
       <Route path="/resetpassword" element={<ResetPassword />} />
+
+      <Route path="/medicalform" element={<MedicalInfoFormUI />} />      
+
+      <Route path="/healthinfoform" element={<HealthInfoFormUI />} />      
+
 
       {/* AUTHENTICATED PAGES */}
       {/* {isLoggedIn && (
