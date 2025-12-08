@@ -91,6 +91,7 @@ export function MedicalInfoFormUI() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                  placeholder="Full Name"
                 />
               </div>
 
@@ -146,7 +147,7 @@ export function MedicalInfoFormUI() {
                 <input
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  placeholder="5'8"
+                  placeholder="eg: 5'8"
                   className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
                 />
               </div>
@@ -157,7 +158,7 @@ export function MedicalInfoFormUI() {
                 <input
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  placeholder="70 kg"
+                  placeholder="eg: 70 kg"
                   className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
                 />
               </div>
@@ -170,27 +171,87 @@ export function MedicalInfoFormUI() {
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                  placeholder="eg: 1234567890"
                 />
               </div>
             </div>
 
             {/* Emergency Contacts */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-[#309898]">Emergency Contacts</label>
-                <button type="button" className="text-[#FF8000]">
-                  <Plus className="w-5 h-5" />
-                </button>
+  <div className="flex items-center justify-between mb-2">
+    <label className="block text-[#309898]">Emergency Contacts</label>
+
+    {/* Add New Emergency Contact */}
+            <button
+              type="button"
+              className="text-[#FF8000]"
+              onClick={() =>
+                setEmergencyContact([
+                  ...emergencyContact,
+                  { name: "", phone: "", relation: "" },
+                ])
+              }
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+
+          {emergencyContact.map((contact, index) => (
+            <div key={index} className="border p-4 rounded-xl mb-4">
+              
+              {/* Name + Phone in Same Row */}
+              <div className="flex gap-2 mb-2">
+                <input
+                  placeholder="Name"
+                  className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                  value={contact.name}
+                  onChange={(e) => {
+                    const updated = [...emergencyContact];
+                    updated[index].name = e.target.value;
+                    setEmergencyContact(updated);
+                  }}
+                />
+
+                <input
+                  placeholder="Phone"
+                  className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                  value={contact.phone}
+                  onChange={(e) => {
+                    const updated = [...emergencyContact];
+                    updated[index].phone = e.target.value;
+                    setEmergencyContact(updated);
+                  }}
+                />
               </div>
 
-              <div className="flex gap-2 mb-2">
-                <input placeholder="Name" className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30" />
-                <input placeholder="Phone" className="flex-1 px-4 py-2 rounded-lg border-2 border-[#309898]/30" />
-                <button type="button" className="text-red-500">
-                  <X className="w-5 h-5" />
+              {/* Relation Below */}
+              <input
+                placeholder="Relation"
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30 mb-2"
+                value={contact.relation}
+                onChange={(e) => {
+                  const updated = [...emergencyContact];
+                  updated[index].relation = e.target.value;
+                  setEmergencyContact(updated);
+                }}
+              />
+
+              {/* Delete Contact */}
+              {index !== 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const filtered = emergencyContact.filter((_, i) => i !== index);
+                    setEmergencyContact(filtered);
+                  }}
+                  className="text-red-500 flex items-center gap-1"
+                >
+                  <X className="w-5 h-5" /> Remove
                 </button>
-              </div>
+              )}
             </div>
+          ))}
+        </div>
 
           </div>
         </div>
