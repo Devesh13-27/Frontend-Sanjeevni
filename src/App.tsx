@@ -10,6 +10,9 @@ import { ForgotPassword } from "./components/ForgotPassword";
 import { ResetPassword } from "./components/ResetPassword";
 import { MedicalInfoFormUI } from "./components/MedicalInfoForm";
 import HealthInfoFormUI from "./components/CurrentMedicalStatus";
+import PastMedicalHistoryUI from "./components/PastMedicalHistory";
+import FamilyMedicalHistoryUI from './components/FamilyMedicationHistory'
+
 import { useState } from "react";
 
 function App() {
@@ -48,7 +51,11 @@ function App() {
 
       <Route path="/medicalform" element={<MedicalInfoFormUI />} />      
 
-      <Route path="/healthinfoform" element={<HealthInfoFormUI />} />      
+      <Route path="/healthinfoform" element={<HealthInfoFormUI />} />   
+
+     <Route path="/pastmedicalhistoryform" element={<PastMedicalHistoryUI />} />      
+
+     <Route path="/familymedicalhistory" element={<FamilyMedicalHistoryUI />} />      
 
 
       {/* AUTHENTICATED PAGES */}

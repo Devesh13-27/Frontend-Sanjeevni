@@ -26,13 +26,32 @@ export function MedicalInfoFormUI() {
   const [bloodGroup, setBloodGroup] = useState("");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
+  const [bmi, setBmi] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [emergencyContact, setEmergencyContact] = useState([
     { name: "", phone: "", relation: "" },
   ]);
 
+  useEffect(() => {
+    const h = Number(height);
+    const w = Number(weight);
+    if (!h || !w){
+      setBmi("");
+      return;
+    }
+    const height_in_m = h / 100;
+    const calc_bmi = w / (height_in_m * height_in_m);
+    if(!isNaN(calc_bmi) && isFinite(calc_bmi)){
+      setBmi(calc_bmi.toFixed(1));
+    }
+  }, [height, weight]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // const height_in_m = Number(height) / 100;
+    // const calc_bmi = Number(weight) / (height_in_m * height_in_m);
+    // setBmi(calc_bmi.toFixed(1));
 
     const birthDate = new Date(dob);
 
@@ -43,6 +62,7 @@ export function MedicalInfoFormUI() {
       bloodGroup,
       height,
       weight,
+      bmi,
       contactNumber,
       emergencyContact,
     };
@@ -143,11 +163,11 @@ export function MedicalInfoFormUI() {
 
               {/* Height */}
               <div>
-                <label className="block text-[#309898] mb-2">Height</label>
+                <label className="block text-[#309898] mb-2">Height (cm)</label>
                 <input
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  placeholder="eg: 5'8"
+                  placeholder="eg: 172"
                   className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
                 />
               </div>
@@ -160,6 +180,18 @@ export function MedicalInfoFormUI() {
                   onChange={(e) => setWeight(e.target.value)}
                   placeholder="eg: 70 kg"
                   className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                />
+              </div>
+
+              {/* BMI */}
+              <div>
+                <label className="block text-[#309898] mb-2">BMI</label>
+                <input
+                  value={bmi}
+                  onChange={(e) => setBmi(e.target.value)}
+                  placeholder="eg: 2.7"
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
+                  readOnly
                 />
               </div>
 

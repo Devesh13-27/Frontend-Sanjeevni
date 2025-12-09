@@ -18,9 +18,35 @@ export default function HealthInfoFormUI() {
     getUser();
   }, [])
 
-  const [condition, setConditions] = useState("")
+  const [conditions, setConditions] = useState([""]);
+  const [currentMedications, setCurrentMedications] = useState([
+    { name: "", dosage: "", frequency: "", purpose: "" },
+  ]);
+  const [allergies, setAllergies] = useState([""]);
+  const [treatments, setTreatments] = useState([""])
 
-  const handleNext = () => {
+
+
+  const handleNext = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const healthData = { 
+      conditions,
+      currentMedications,
+      allergies,
+      treatments 
+    };
+
+    const { error } = await supabase
+     .from("profiles")
+     .update({ health: healthData})
+     .eq("uid", userId)
+
+     if (error) {
+      alert("Error: " + error.message);
+     } else { 
+      navigate("/pastmedicalhistoryform")
+     }
 
   }
 
@@ -76,7 +102,7 @@ export default function HealthInfoFormUI() {
           <div className="space-y-4">
             <h3 className="text-[#FF8000] mb-4">Current Medications</h3>
 
-            {medications.map((med, index) => (
+            {currentMedications.map((med, index) => (
               <div
                 key={index}
                 className="p-4 border-2 border-[#309898]/30 rounded-lg bg-gray-50 space-y-3 relative"
@@ -86,7 +112,7 @@ export default function HealthInfoFormUI() {
                     type="button"
                     className="absolute top-2 right-2 text-red-500"
                     onClick={() =>
-                      setMedications(medications.filter((_, i) => i !== index))
+                      setCurrentMedications(currentMedications.filter((_, i) => i !== index))
                     }
                   >
                     <X className="w-5 h-5" />
@@ -99,9 +125,9 @@ export default function HealthInfoFormUI() {
                     <input
                       value={med.name}
                       onChange={(e) => {
-                        const updated = [...medications];
+                        const updated = [...currentMedications];
                         updated[index].name = e.target.value;
-                        setMedications(updated);
+                        setCurrentMedications(updated);
                       }}
                       placeholder="e.g., Metformin"
                       className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
@@ -113,9 +139,9 @@ export default function HealthInfoFormUI() {
                     <input
                       value={med.dosage}
                       onChange={(e) => {
-                        const updated = [...medications];
+                        const updated = [...currentMedications];
                         updated[index].dosage = e.target.value;
-                        setMedications(updated);
+                        setCurrentMedications(updated);
                       }}
                       placeholder="e.g., 500 mg"
                       className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
@@ -127,9 +153,9 @@ export default function HealthInfoFormUI() {
                     <input
                       value={med.frequency}
                       onChange={(e) => {
-                        const updated = [...medications];
+                        const updated = [...currentMedications];
                         updated[index].frequency = e.target.value;
-                        setMedications(updated);
+                        setCurrentMedications(updated);
                       }}
                       placeholder="e.g., Twice a day"
                       className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
@@ -141,9 +167,9 @@ export default function HealthInfoFormUI() {
                     <input
                       value={med.purpose}
                       onChange={(e) => {
-                        const updated = [...medications];
+                        const updated = [...currentMedications];
                         updated[index].purpose = e.target.value;
-                        setMedications(updated);
+                        setCurrentMedications(updated);
                       }}
                       placeholder="e.g., Blood sugar control"
                       className="w-full px-4 py-2 rounded-lg border-2 border-[#309898]/30"
@@ -156,8 +182,8 @@ export default function HealthInfoFormUI() {
             <button
               type="button"
               onClick={() =>
-                setMedications([
-                  ...medications,
+                setCurrentMedications([
+                  ...currentMedications,
                   { name: "", dosage: "", frequency: "", purpose: "" },
                 ])
               }
@@ -246,21 +272,16 @@ export default function HealthInfoFormUI() {
               <Plus className="w-5 h-5" /> Add Treatment
             </button>
           </div>
-
+            <div className="flex justify-end mt-8">
+            <button
+              type="submit"
+              className="flex items-center gap-2 bg-[#FF8000] text-white px-6 py-2 rounded-lg hover:bg-[#309898] cursor-pointer"
+            >
+              Next <ChevronRight />
+            </button>
+          </div>
         </form>
-
-        {/* NAVIGATION BUTTON */}
-        <div className="flex justify-end mt-8">
-          <button
-            type="submit"
-            form="healthForm"
-            className="flex items-center gap-2 bg-[#FF8000] text-white px-6 py-2 rounded-lg hover:bg-[#309898]"
-          >
-            Next <ChevronRight />
-          </button>
-        </div>
-
-      </div>
+    </div>
     </div>
   );
 }
