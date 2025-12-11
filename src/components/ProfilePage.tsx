@@ -1,455 +1,453 @@
-import { useState } from 'react';
-import { User, Mail, Phone, Users, Activity, FileText, Heart, LogOut, Edit2, Download } from 'lucide-react';
-import { UserData } from '../App';
-import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
-import { MedicalInfoForm } from './MedicalInfoForm';
+import {
+  User, Mail, Phone, Activity, Edit2,
+  Download, Droplet, Calculator, CalendarCheck,
+  ChevronDown, Users, Menu, X, Pill, History, LogOut, Calendar
+} from 'lucide-react';
+import { supabase } from '../createClient';
+import { useEffect, useState } from 'react';
 
-type Props = {
-  userData: UserData;
-  onNavigateToHome: () => void;
-  onNavigateToVault: () => void;
-  onLogout: () => void;
-  onUpdateUserData: (data: UserData) => void;
-};
+export default function ProfilePageUI() {
 
-export function ProfilePage({ userData, onNavigateToHome, onNavigateToVault, onLogout, onUpdateUserData }: Props) {
-  const [showEditForm, setShowEditForm] = useState(false);
+  const [userId, setUserId] = useState("");
 
-  const handleFormSubmit = (updatedData: UserData) => {
-    onUpdateUserData(updatedData);
-    setShowEditForm(false);
-  };
-
-  const handleExportPDF = () => {
-    const printWindow = window.open('', '', 'height=800,width=800');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Vytara - Medical Profile</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
-              h1 { color: #309898; }
-              h2 { color: #FF8000; margin-top: 20px; }
-              h3 { color: #309898; }
-              .section { margin-bottom: 30px; }
-              .field { margin-bottom: 10px; }
-              .label { font-weight: bold; color: #309898; }
-              .value { color: #333; }
-              table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #309898; color: white; }
-            </style>
-          </head>
-          <body>
-            <h1>Vytara Medical Profile</h1>
-            <div class="section">
-              <h2>Personal Information</h2>
-              <div class="field"><span class="label">Full Name:</span> ${userData.personalInfo.fullName}</div>
-              <div class="field"><span class="label">Email:</span> ${userData.email}</div>
-              <div class="field"><span class="label">Username:</span> @${userData.username}</div>
-              <div class="field"><span class="label">Date of Birth:</span> ${new Date(userData.personalInfo.dateOfBirth).toLocaleDateString()}</div>
-              <div class="field"><span class="label">Gender:</span> ${userData.personalInfo.gender}</div>
-              <div class="field"><span class="label">Blood Group:</span> ${userData.personalInfo.bloodGroup}</div>
-              <div class="field"><span class="label">Height:</span> ${userData.personalInfo.height || 'Not specified'}</div>
-              <div class="field"><span class="label">Weight:</span> ${userData.personalInfo.weight || 'Not specified'}</div>
-              <div class="field"><span class="label">Contact Number:</span> ${userData.personalInfo.contactNumber}</div>
-            </div>
-
-            <div class="section">
-              <h3>Emergency Contacts</h3>
-              <table>
-                <tr><th>Name</th><th>Phone</th></tr>
-                ${userData.personalInfo.emergencyContacts.map(contact => `
-                  <tr><td>${contact.name}</td><td>${contact.phone}</td></tr>
-                `).join('')}
-              </table>
-            </div>
-
-            <div class="section">
-              <h2>Current Medical Status</h2>
-              ${userData.currentMedical.conditions.length > 0 ? `
-                <h3>Current Conditions</h3>
-                <p>${userData.currentMedical.conditions.join(', ')}</p>
-              ` : ''}
-              
-              ${userData.currentMedical.medications.length > 0 ? `
-                <h3>Current Medications</h3>
-                <table>
-                  <tr><th>Name</th><th>Dosage</th><th>Frequency</th></tr>
-                  ${userData.currentMedical.medications.map(med => `
-                    <tr><td>${med.name}</td><td>${med.dosage}</td><td>${med.frequency}</td></tr>
-                  `).join('')}
-                </table>
-              ` : ''}
-
-              ${userData.currentMedical.allergies.length > 0 ? `
-                <h3>Allergies</h3>
-                <p>${userData.currentMedical.allergies.join(', ')}</p>
-              ` : ''}
-
-              ${userData.currentMedical.doctors.length > 0 ? `
-                <h3>Current Doctors</h3>
-                <table>
-                  <tr><th>Name</th><th>Phone</th></tr>
-                  ${userData.currentMedical.doctors.map(doc => `
-                    <tr><td>${doc.name}</td><td>${doc.phone}</td></tr>
-                  `).join('')}
-                </table>
-              ` : ''}
-            </div>
-
-            <div class="section">
-              <h2>Past Medical History</h2>
-              ${userData.pastMedical.diseases.length > 0 ? `
-                <h3>Previous Diseases</h3>
-                <p>${userData.pastMedical.diseases.join(', ')}</p>
-              ` : ''}
-
-              ${userData.pastMedical.surgeries.length > 0 ? `
-                <h3>Past Surgeries</h3>
-                <table>
-                  <tr><th>Name</th><th>Date</th></tr>
-                  ${userData.pastMedical.surgeries.map(surgery => `
-                    <tr><td>${surgery.name}</td><td>${new Date(surgery.date).toLocaleDateString()}</td></tr>
-                  `).join('')}
-                </table>
-              ` : ''}
-            </div>
-
-            ${userData.familyHistory.length > 0 ? `
-              <div class="section">
-                <h2>Family Medical History</h2>
-                <table>
-                  <tr><th>Disease</th><th>Relation</th></tr>
-                  ${userData.familyHistory.map(item => `
-                    <tr><td>${item.disease}</td><td>${item.relation}</td></tr>
-                  `).join('')}
-                </table>
-              </div>
-            ` : ''}
-
-            <script>
-              window.print();
-              window.onafterprint = function() {
-                window.close();
-              };
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
+  useEffect(() => {
+    async function getUser(){
+      const { data } = await supabase.auth.getUser();
+      if(data.user){
+        setUserId(data.user.id)
+        setEmail(data.user.email ?? "")
+      }
     }
-  };
+    getUser();
+  }, [])
+
+  {/* PERSONAL DATA */}
+  const [userName, setUserName] = useState("");
+  const [gender, setGender] = useState("");
+  const [email, setEmail] = useState("");
+  const [dob, setDob] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [bmi, setBmi] = useState("");
+
+  {/* MEDICAL DATA */}
+  const [conditions, setConditions] = useState<string[]>([]);
+  const [allergy, setAllergy] = useState<string[]>([]);
+  const [treatment, setTreatment] = useState<string[]>([]);
+
+  type Medication = {
+    name: string,
+    dosage: string,
+    purpose: string,
+    frequency: string
+  }
+  
+  const [currentMedications, setCurrentMedications] = useState<Medication[]>([]);
+
+  useEffect(() => {
+    async function fetchProfileData() {
+      if (userId) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('personal')
+          .eq('uid', userId)
+          .single();
+        
+        if ( data && data.personal ) {
+          const profile = data.personal;
+          setUserName(profile.fullName || "");
+          setGender(profile.gender || "");
+          setDob(profile.dob || "");
+          setPhoneNumber(profile.contactNumber || "");
+          setBloodGroup(profile.bloodGroup || "");
+          setBmi(profile.bmi || "");
+        }
+
+        if ( error ){
+          console.log("Error: ", error);
+        }
+      }
+    }
+    fetchProfileData();
+  }, [userId]);
+
+  useEffect(() => {
+    async function fetchHealthData(){
+      const { data, error } = await supabase
+      .from("profiles")
+      .select("health")
+      .eq("uid", userId)
+      .single()
+
+      if (error){
+        console.log("Error: ", error);
+        return;
+      }
+
+      if (data && data.health){
+        setConditions(data.health.conditions || []);
+        setAllergy(data.health.allergies || []);  
+        setTreatment(data.health.treatments || []);
+        setCurrentMedications(data.health.currentMedications || []);
+      }
+    }
+    fetchHealthData();
+  }, [userId]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#309898]/10 via-white to-[#FF8000]/10">
-      {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logoImage} alt="Vytara Logo" className="w-12 h-12" />
-            <h1 className="text-[#309898]">Vytara - Profile</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onNavigateToHome}
-              className="px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
-            >
-              Home
-            </button>
-            <button
-              onClick={onNavigateToVault}
-              className="px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition"
-            >
-              Visit Vault
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-            >
-              <Download className="w-4 h-4" />
-              Export as PDF
-            </button>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
+    <div className="min-h-screen bg-gradient-to-b from-[#003B46] via-[#006770] via-[#00838B] to-[#00A3A9] pb-10 font-sans">
+      
+      {/* Navbar */}
+      <header 
+        className="sticky top-0 z-40 border-b border-white/20 shadow-sm"
+        style={{ background: 'linear-gradient(90deg, #006770 0%, #00838B 40%, #00A3A9 100%)' }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md p-2">
+                <div className="w-full h-full bg-teal-600 rounded-full"></div>
+              </div>
+              <h1 className="text-xl font-bold text-white tracking-wide">Vytara</h1>
+            </div>
+            
+            {/* Menu Button */}
+            <div className="relative">
+              <button className="p-2 text-white hover:bg-white/20 rounded-lg flex items-center justify-center transition border border-white/30 bg-white/10 backdrop-blur-sm">
+                <Menu className="w-7 h-7" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#309898]">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-[#309898] to-[#FF8000] rounded-full flex items-center justify-center">
-              <User className="w-12 h-12 text-white" />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          
+          {/* Left: Basic Info & KPIs */}
+          <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-xl shadow-teal-900/20 border border-white/20 flex flex-col justify-between relative overflow-hidden">
+            
+            {/* Background Decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-50 to-orange-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-80 pointer-events-none"></div>
+
+            {/* Edit Button */}
+            <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+              <button className="p-2 bg-white/90 backdrop-blur text-gray-500 hover:text-[#FF8000] hover:bg-orange-50 rounded-full border border-gray-200 shadow-sm transition">
+                <Edit2 className="w-4 h-4" />
+              </button>
             </div>
-            <div>
-              <h2 className="text-[#309898] mb-2">{userData.personalInfo.fullName}</h2>
-              <div className="flex items-center gap-4 text-gray-600">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#FF8000]" />
-                  <span>{userData.email}</span>
+
+            {/* Profile Info */}
+            <div className="flex flex-col md:flex-row items-start gap-6 mb-8 mt-2 relative z-0">
+              {/* Switch Profile Button & Avatar */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative">
+                  <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur hover:bg-white text-gray-700 rounded-full text-xs font-bold uppercase tracking-wider transition border border-gray-200 shadow-sm">
+                    <Users className="w-3 h-3 text-teal-600" />
+                    <span>Switch Profile</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-[#FF8000]" />
-                  <span>@{userData.username}</span>
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center border-[4px] border-white shadow-lg shrink-0">
+                  <User className="w-10 h-10 text-teal-700/80" />
+                </div>
+              </div>
+
+              <div className="flex-1 w-full pt-2">
+                <div className="mb-4">
+                  <h2 className="text-3xl font-bold text-gray-800 tracking-tight">{userName}</h2>
+                  {/* <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wide rounded-full border border-blue-200">
+                      {gender}
+                    </span>
+                    <span className="text-gray-400 text-xs ml-1">ID: @johndoe</span>
+                  </div> */}
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 group hover:text-teal-600 transition">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-teal-50 flex items-center justify-center">
+                      <Mail className="w-3 h-3" />
+                    </div> 
+                    <span className="truncate">{email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 group hover:text-teal-600 transition">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-teal-50 flex items-center justify-center">
+                      <Phone className="w-3 h-3" />
+                    </div>
+                    <span>{phoneNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 group hover:text-teal-600 transition">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-teal-50 flex items-center justify-center">
+                      <Calendar className="w-3 h-3" />
+                    </div>
+                    <span>{dob}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Basic Personal Information */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#FF8000]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[#FF8000]">Basic Personal Information</h3>
-            <button
-              onClick={() => setShowEditForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition"
-            >
-              <Edit2 className="w-4 h-4" />
-              Edit
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[#309898] mb-2">Full Name</label>
-              <p className="text-gray-700">{userData.personalInfo.fullName}</p>
-            </div>
-            
-            <div>
-              <label className="block text-[#309898] mb-2">Email</label>
-              <p className="text-gray-700">{userData.email}</p>
-            </div>
+            {/* KPI Section */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {/* KPI 1 */}
+              <div className="bg-red-50 p-4 rounded-2xl border border-red-100 hover:border-red-300 transition shadow-sm group">
+                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Droplet className="w-3 h-3 fill-red-400 text-red-400 group-hover:scale-110 transition" /> Blood
+                </p>
+                <p className="text-2xl font-bold text-gray-800">{bloodGroup}</p>
+              </div>
+               
+              {/* KPI 2 */}
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 hover:border-blue-300 transition shadow-sm group">
+                <p className="text-[10px] text-blue-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Calculator className="w-3 h-3 text-blue-500 group-hover:scale-110 transition" /> BMI
+                </p>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-2xl font-bold text-gray-800">{bmi}</p>
+                  <span className="text-[10px] text-gray-500 font-medium">kg/m²</span>
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-[#309898] mb-2">Date of Birth</label>
-              <p className="text-gray-700">{new Date(userData.personalInfo.dateOfBirth).toLocaleDateString()}</p>
-            </div>
-            
-            <div>
-              <label className="block text-[#309898] mb-2">Gender</label>
-              <p className="text-gray-700">{userData.personalInfo.gender}</p>
-            </div>
-            
-            <div>
-              <label className="block text-[#309898] mb-2">Blood Group</label>
-              <p className="text-gray-700">{userData.personalInfo.bloodGroup}</p>
-            </div>
-            
-            <div>
-              <label className="block text-[#309898] mb-2">Height</label>
-              <p className="text-gray-700">{userData.personalInfo.height || 'Not specified'}</p>
-            </div>
-            
-            <div>
-              <label className="block text-[#309898] mb-2">Weight</label>
-              <p className="text-gray-700">{userData.personalInfo.weight || 'Not specified'}</p>
-            </div>
-            
-            <div>
-              <label className="block text-[#309898] mb-2">Contact Number</label>
-              <p className="text-gray-700 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#FF8000]" />
-                {userData.personalInfo.contactNumber}
-              </p>
+              {/* KPI 3 */}
+              {/* <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100 hover:border-purple-300 transition shadow-sm group">
+                <p className="text-[10px] text-purple-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <CalendarCheck className="w-3 h-3 text-purple-500 group-hover:scale-110 transition" /> Visits
+                </p>
+                <p className="text-2xl font-bold text-gray-800">12</p>
+              </div> */}
             </div>
           </div>
 
-          <div className="mt-6">
-            <label className="block text-[#309898] mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Emergency Contacts
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {userData.personalInfo.emergencyContacts.map((contact, idx) => (
-                <div key={idx} className="p-4 bg-[#309898]/5 rounded-lg border-2 border-[#309898]/20">
-                  <p className="text-[#309898]">{contact.name}</p>
-                  <p className="text-gray-600 text-sm flex items-center gap-2">
-                    <Phone className="w-3 h-3" />
-                    {contact.phone}
-                  </p>
+          {/* Right: Historical Visits */}
+          <div className="bg-white rounded-3xl p-6 shadow-xl shadow-teal-900/20 border border-white/20 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-blue-100 text-blue-600">
+                  <History className="w-4 h-4"/>
+                </div> 
+                Historical Visits
+              </h3>
+              <button className="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-md transition">View All</button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-3 max-h-[300px] pr-2">
+              {[
+                { title: 'Annual Physical Checkup', doctor: 'Dr. Sarah Smith', date: '15', month: 'Nov' },
+                { title: 'Dental Cleaning', doctor: 'Dr. Emily Chen', date: '02', month: 'Oct' },
+                { title: 'Viral Fever Consultation', doctor: 'Dr. Sarah Smith', date: '20', month: 'Aug' }
+              ].map((event, index) => (
+                <div key={index} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-2xl transition cursor-pointer group border border-transparent hover:border-gray-100">
+                  <div className="w-12 h-12 rounded-xl bg-gray-100 group-hover:bg-white group-hover:shadow-md flex flex-col items-center justify-center text-gray-500 group-hover:text-blue-600 shrink-0 transition duration-300">
+                    <span className="text-lg font-bold leading-none">{event.date}</span>
+                    <span className="text-[10px] font-bold uppercase">{event.month}</span>
+                  </div>
+                  <div className="pt-0.5">
+                    <p className="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition">{event.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{event.doctor}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Current Medical Status */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#309898]">
-          <h3 className="text-[#309898] mb-6 flex items-center gap-2">
-            <Activity className="w-6 h-6" />
-            Current Medical Status
-          </h3>
+        {/* Medical Information Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           
-          {userData.currentMedical.conditions.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#FF8000] mb-2">Current Conditions</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.currentMedical.conditions.map((condition, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#FF8000]/10 text-[#FF8000] rounded-lg">
-                    {condition}
-                  </span>
-                ))}
+          {/* Current Medical Status */}
+          <div className="bg-white rounded-3xl p-6 shadow-xl shadow-teal-900/20 border border-white/20">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+              <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                <Activity className="w-5 h-5" />
               </div>
+              <h3 className="font-bold text-gray-800">Current Medical Status</h3>
             </div>
-          )}
+            
+            <div className="space-y-6">
+              {/* Current Diagnosed Conditions */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Current Diagnosed Conditions</label>
+                <div className="flex flex-wrap gap-2">
+                  {conditions.length > 0 ? (
+                    conditions.map((condition, index) => (
+                      <span
+                        key={index}
+                        className='px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100'
+                      >
+                        {condition}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400 text-sm">No conditions added</span>
+                  )}
+                </div>
+              </div>
 
-          {userData.currentMedical.medications.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#FF8000] mb-2">Current Medications</label>
-              <div className="space-y-2">
-                {userData.currentMedical.medications.map((med, idx) => (
-                  <div key={idx} className="p-3 bg-[#309898]/5 rounded-lg border-l-4 border-[#309898]">
-                    <p className="text-[#309898]">{med.name}</p>
-                    <p className="text-sm text-gray-600">{med.dosage} - {med.frequency}</p>
+              {/* Allergies */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Allergies</label>
+                <div className="flex flex-wrap gap-2">
+                    {allergy.length > 0 ? (
+                      allergy.map((allergy, index) => (
+                        <span
+                          key={index}
+                          className='px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100'
+                        >
+                          {allergy}
+                        </span>
+                      ))
+                    ) : (
+                      <span className='text-gray-400 text-sm'>No Allergies Added</span>
+                    )}
+                </div>
+              </div>
+
+              {/* Ongoing Treatments */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Ongoing Treatments</label>
+                  <div className="flex flex-wrap gap-2">
+                    {treatment.length > 0 ? (
+                      treatment.map((treatment, index) => (
+                        <span
+                          key={index}
+                          className='px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100'
+                        >
+                          {treatment}
+                        </span>
+                      ))
+                    ) : (
+                      <span className='text-gray-400 text-sm'>No Treatments Currently</span>
+                    )}  
+                  </div>  
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Current Medication</label>                  
+                {currentMedications.map((current, index) => (
+                  <div 
+                    key={index}
+                    className='flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100'
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                        <Pill className="w-4 h-4" />
+                      </div>
+
+                      <div>
+                        <p className="font-bold text-gray-700">{current.name}</p>
+                        <p className="text-xs text-gray-500">Purpose: {current.purpose}</p>
+                        <p className="text-xs text-gray-500">Dosage: {current.frequency}</p>
+                      </div>
+                    </div>
+
+                    <span className='text-sm font-medium text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm border border-gray-100'>
+                      {current.dosage}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          </div>
 
-          {userData.currentMedical.allergies.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#FF8000] mb-2">Allergies</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.currentMedical.allergies.map((allergy, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-red-100 text-red-700 rounded-lg">
-                    {allergy}
-                  </span>
-                ))}
+          {/* Past Medical History */}
+          <div className="bg-white rounded-3xl p-6 shadow-xl shadow-teal-900/20 border border-white/20">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+              <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                <History className="w-5 h-5" />
               </div>
+              <h3 className="font-bold text-gray-800">Past Medical History</h3>
             </div>
-          )}
-
-          {userData.currentMedical.treatments.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#FF8000] mb-2">Ongoing Treatments</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.currentMedical.treatments.map((treatment, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#309898]/10 text-[#309898] rounded-lg">
-                    {treatment}
-                  </span>
-                ))}
+            
+            <div className="space-y-6">
+              {/* Previous Diagnosed Conditions */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Previous Diagnosed Conditions</label>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium border border-blue-100">Seasonal Allergies (2020)</span>
+                  <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium border border-blue-100">Sprained Ankle (2018)</span>
+                </div>
               </div>
-            </div>
-          )}
 
-          {userData.currentMedical.doctors.length > 0 && (
-            <div>
-              <label className="block text-[#FF8000] mb-2">Current Doctors</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {userData.currentMedical.doctors.map((doctor, idx) => (
-                  <div key={idx} className="p-3 bg-[#FF8000]/5 rounded-lg border-l-4 border-[#FF8000]">
-                    <p className="text-[#FF8000]">{doctor.name}</p>
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <Phone className="w-3 h-3" />
-                      {doctor.phone}
-                    </p>
+              {/* Past Surgeries */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Past Surgeries</label>
+                <div className="space-y-2">
+                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <p className="font-bold text-gray-700 text-sm">Appendectomy</p>
+                    <p className="text-xs text-gray-500 mt-1">Year: 2015</p>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
 
-        {/* Past Medical History */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 mb-8 border-4 border-[#FF8000]">
-          <h3 className="text-[#FF8000] mb-6 flex items-center gap-2">
-            <FileText className="w-6 h-6" />
-            Past Medical History
-          </h3>
-          
-          {userData.pastMedical.diseases.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#309898] mb-2">Previous Diseases</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.pastMedical.diseases.map((disease, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#309898]/10 text-[#309898] rounded-lg">
-                    {disease}
-                  </span>
-                ))}
+              {/* Childhood Illness */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Childhood Illness</label>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-sm font-medium border border-purple-100">Chickenpox</span>
+                  <span className="px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-sm font-medium border border-purple-100">Measles</span>
+                </div>
               </div>
-            </div>
-          )}
 
-          {userData.pastMedical.surgeries.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#309898] mb-2">Past Surgeries</label>
-              <div className="space-y-2">
-                {userData.pastMedical.surgeries.map((surgery, idx) => (
-                  <div key={idx} className="p-3 bg-[#FF8000]/5 rounded-lg border-l-4 border-[#FF8000]">
-                    <p className="text-[#FF8000]">{surgery.name}</p>
-                    <p className="text-sm text-gray-600">{new Date(surgery.date).toLocaleDateString()}</p>
-                  </div>
-                ))}
+              {/* Long Term Treatments */}
+              <div>
+                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Long Term Treatments</label>
+                <span className="text-gray-400 text-sm italic">No long-term treatments</span>
               </div>
             </div>
-          )}
-
-          {userData.pastMedical.hospitalizations.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#309898] mb-2">Hospitalizations</label>
-              <div className="space-y-2">
-                {userData.pastMedical.hospitalizations.map((hosp, idx) => (
-                  <div key={idx} className="p-3 bg-[#309898]/5 rounded-lg border-l-4 border-[#309898]">
-                    <p className="text-[#309898]">{hosp.reason}</p>
-                    <p className="text-sm text-gray-600">{new Date(hosp.date).toLocaleDateString()}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userData.pastMedical.injuries.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-[#309898] mb-2">Past Injuries</label>
-              <div className="flex flex-wrap gap-2">
-                {userData.pastMedical.injuries.map((injury, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-[#FF8000]/10 text-[#FF8000] rounded-lg">
-                    {injury}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Family Medical History */}
-        {userData.familyHistory.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-lg p-8 border-4 border-[#309898]">
-            <h3 className="text-[#309898] mb-6 flex items-center gap-2">
-              <Heart className="w-6 h-6" />
-              Family Medical History
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {userData.familyHistory.map((item, idx) => (
-                <div key={idx} className="p-4 bg-[#309898]/5 rounded-lg border-2 border-[#309898]/20">
-                  <p className="text-[#309898]">{item.disease}</p>
-                  <p className="text-sm text-gray-600">{item.relation}</p>
-                </div>
-              ))}
+        <div className="bg-white rounded-3xl p-6 shadow-xl shadow-teal-900/20 border border-white/20 mb-6">
+          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+            <div className="p-2 bg-green-50 rounded-lg text-green-600">
+              <Users className="w-5 h-5" />
             </div>
+            <h3 className="font-bold text-gray-800">Family Medical History</h3>
           </div>
-        )}
-      </main>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: 'Father', age: '65', conditions: ['Hypertension', 'Diabetes Type 2'] },
+              { name: 'Mother', age: '62', conditions: ['Thyroid Disorder', 'Osteoporosis'] },
+              { name: 'Grandfather (Paternal)', deceased: true, conditions: ['Heart Disease', 'Stroke'] },
+              { name: 'Grandmother (Maternal)', deceased: true, conditions: ['Alzheimer\'s Disease'] },
+              { name: 'Uncle (Paternal)', age: '58', conditions: ['Cancer (Colon)', 'Recovered'] },
+              { name: 'Sibling', age: '28', conditions: [] }
+            ].map((member, index) => (
+              <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-green-300 transition">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-800 text-sm">{member.name}</p>
+                    {member.age && <p className="text-xs text-gray-500">Age {member.age}</p>}
+                    {member.deceased && <p className="text-xs text-gray-400 italic">(Deceased)</p>}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {member.conditions.length > 0 ? (
+                    member.conditions.map((condition, i) => (
+                      <span key={i} className={`inline-block px-2 py-1 rounded text-xs font-medium border ${
+                        condition === 'Recovered' 
+                          ? 'bg-green-50 text-green-600 border-green-100'
+                          : 'bg-red-50 text-red-600 border-red-100'
+                      }`}>
+                        {condition}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400 text-xs italic">No known conditions</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Edit Form Modal */}
-      {showEditForm && (
-        <MedicalInfoForm
-          initialData={userData}
-          onComplete={handleFormSubmit}
-          onClose={() => setShowEditForm(false)}
-        />
-      )}
+      </main>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import SignupPage from "./components/SignupPage";
 import { LoginSignupModal } from "./components/LoginSignupModal";
 import { VaultPage } from "./components/VaultPage";
-import { ProfilePage } from "./components/ProfilePage";
 import ConfirmationEmailPage from "./components/ConfirmEmail";
 import Verified from "./components/Verified";
 import { HomePage } from "./components/HomePage";
@@ -12,6 +11,7 @@ import { MedicalInfoFormUI } from "./components/MedicalInfoForm";
 import HealthInfoFormUI from "./components/CurrentMedicalStatus";
 import PastMedicalHistoryUI from "./components/PastMedicalHistory";
 import FamilyMedicalHistoryUI from './components/FamilyMedicationHistory'
+import ProfilePageUI from "./components/ProfilePage";
 
 import { useState } from "react";
 
@@ -56,6 +56,9 @@ function App() {
      <Route path="/pastmedicalhistoryform" element={<PastMedicalHistoryUI />} />      
 
      <Route path="/familymedicalhistory" element={<FamilyMedicalHistoryUI />} />      
+
+     <Route path="/profilepage" element={<ProfilePageUI />} />      
+    
 
 
       {/* AUTHENTICATED PAGES */}

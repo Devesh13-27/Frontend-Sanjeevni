@@ -1,8 +1,12 @@
 import { Calendar, Users, Stethoscope, Pill, Activity, Building2, Shield, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import logoImage from 'figma:asset/8e191f727b2ef8023e7e4984e9036f679c3d3038.png';
+import { useNavigate } from 'react-router-dom';
 
 export function HomePage() {
+  
+  const navigate = useNavigate();
+
   const cards = [
     {
       id: 'appointments',
@@ -72,7 +76,10 @@ export function HomePage() {
             <button className="px-4 py-2 bg-[#FF8000] text-white rounded-lg hover:bg-[#FF8000]/80 transition">
               Visit Vault
             </button>
-            <button className="px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition">
+            <button 
+              className="px-4 py-2 bg-[#309898] text-white rounded-lg hover:bg-[#309898]/80 transition cursor-pointer"
+              onClick={() => navigate("/profilepage")}
+            >
               Profile
             </button>
           </div>
