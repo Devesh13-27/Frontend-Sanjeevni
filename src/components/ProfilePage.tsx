@@ -4,7 +4,7 @@ import {
   ChevronDown, Users, Menu, X, Pill, History, LogOut, Calendar
 } from 'lucide-react';
 import { supabase } from '../createClient';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 export default function ProfilePageUI() {
 
@@ -43,6 +43,26 @@ export default function ProfilePageUI() {
   }
   
   const [currentMedications, setCurrentMedications] = useState<Medication[]>([]);
+
+  {/* PAST MEDICAL HISTORY */}
+
+  const [previousDiagnosedCondition, setPreviousDiagnosedCondition] = useState<string[]>([]);
+  const [childhoodIllness, setChildhoodIllness] = useState<string[]>([]);
+  const [longTermTreatments, setLongTermTreatments] = useState<string[]>([]);
+
+  type PastSurgery = {
+    name: string,
+    date: string
+  }
+
+  const [pastSurgeries, setPastSurgeries] = useState<PastSurgery[]>([]);
+
+  type FamilyMedicalHistory = {
+    disease: string,
+    relation: string,
+  }
+
+  const [familyMedicalHistory, setFamilyMedicalHistory] = useState<FamilyMedicalHistory[]>([]);
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -92,6 +112,47 @@ export default function ProfilePageUI() {
       }
     }
     fetchHealthData();
+  }, [userId]);
+
+  useEffect(() => {
+    async function fetchPastData() {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("past_medication")
+        .eq("uid", userId)
+        .single()
+
+        if (error) {
+          console.log("Error: " + error);
+        }
+
+        if ( data && data.past_medication ) {
+          setPreviousDiagnosedCondition(data.past_medication.diagnosedCondition || []);
+          setPastSurgeries(data.past_medication.pastSurgeries || []);
+          setChildhoodIllness(data.past_medication.childhoodIllness || []);
+          setLongTermTreatments(data.past_medication.longTermTreatments || []);
+        }
+    }
+    fetchPastData();
+  }, [userId]);
+
+  useEffect(() => {
+    async function fetchFamilyHealthData() {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("family_health_history")
+        .eq("uid", userId)
+        .single()
+
+      if ( error ) { 
+        console.log("Error: ", error)
+      }
+
+      if ( data && data.family_health_history){
+        setFamilyMedicalHistory(data.family_health_history.familyMedicalHistory || []);
+      }
+    }
+    fetchFamilyHealthData();
   }, [userId]);
 
   return (
@@ -364,8 +425,18 @@ export default function ProfilePageUI() {
               <div>
                 <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Previous Diagnosed Conditions</label>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium border border-blue-100">Seasonal Allergies (2020)</span>
-                  <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium border border-blue-100">Sprained Ankle (2018)</span>
+                  {previousDiagnosedCondition.length > 0 ? (
+                    previousDiagnosedCondition.map((previousDiagnosedCondition, index) => (
+                      <span
+                        key={index}
+                        className='px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100'
+                      >
+                        {previousDiagnosedCondition}
+                      </span>
+                    ))
+                  ) : (
+                    <span className='text-gray-400 text-sm'>No Previous Conditions Added</span>
+                  )}
                 </div>
               </div>
 
@@ -373,10 +444,22 @@ export default function ProfilePageUI() {
               <div>
                 <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Past Surgeries</label>
                 <div className="space-y-2">
-                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <p className="font-bold text-gray-700 text-sm">Appendectomy</p>
-                    <p className="text-xs text-gray-500 mt-1">Year: 2015</p>
-                  </div>
+                  {pastSurgeries.map((pastSurgeries, index) => (
+                    <div 
+                      key={index}
+                      className='flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100'
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                        </div> */}
+
+                        <div>
+                          <p className="font-bold text-gray-700">{pastSurgeries.name}</p>
+                          <p className="text-xs text-gray-500">Date: {pastSurgeries.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -384,15 +467,36 @@ export default function ProfilePageUI() {
               <div>
                 <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Childhood Illness</label>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-sm font-medium border border-purple-100">Chickenpox</span>
-                  <span className="px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-sm font-medium border border-purple-100">Measles</span>
+                  {childhoodIllness.length > 0 ? (
+                    childhoodIllness.map((childhoodIllness, index) => (
+                      <span
+                        key={index}
+                        className='px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100'
+                      >
+                        {childhoodIllness}
+                      </span>
+                    ))
+                  ) : (
+                    <span className='text-gray-400 text-sm'>No ChildHoodIllnesses Added</span>
+                  )}
                 </div>
               </div>
 
               {/* Long Term Treatments */}
               <div>
                 <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-3 block">Long Term Treatments</label>
-                <span className="text-gray-400 text-sm italic">No long-term treatments</span>
+                  {longTermTreatments.length > 0 ? (
+                    longTermTreatments.map((longTermTreatments, index) => (
+                      <span
+                        key={index}
+                        className='px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100'
+                      >
+                        {longTermTreatments}
+                      </span>
+                    ))
+                  ) : (
+                    <span className='text-gray-400 text-sm'>No Long Term Treatments Added</span>
+                  )}
               </div>
             </div>
           </div>
@@ -407,46 +511,24 @@ export default function ProfilePageUI() {
             <h3 className="font-bold text-gray-800">Family Medical History</h3>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { name: 'Father', age: '65', conditions: ['Hypertension', 'Diabetes Type 2'] },
-              { name: 'Mother', age: '62', conditions: ['Thyroid Disorder', 'Osteoporosis'] },
-              { name: 'Grandfather (Paternal)', deceased: true, conditions: ['Heart Disease', 'Stroke'] },
-              { name: 'Grandmother (Maternal)', deceased: true, conditions: ['Alzheimer\'s Disease'] },
-              { name: 'Uncle (Paternal)', age: '58', conditions: ['Cancer (Colon)', 'Recovered'] },
-              { name: 'Sibling', age: '28', conditions: [] }
-            ].map((member, index) => (
-              <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-green-300 transition">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-gray-800 text-sm">{member.name}</p>
-                    {member.age && <p className="text-xs text-gray-500">Age {member.age}</p>}
-                    {member.deceased && <p className="text-xs text-gray-400 italic">(Deceased)</p>}
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-green-300 transition">
+            <div className="space-y-2">
+              {familyMedicalHistory.map((familyMedicalHistory, index) => (
+                <div 
+                  key={index}
+                  className='flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100'
+                >
+                  <div className="flex items-center gap-3">
+                    {/* <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                    </div> */}
+                      <p className="font-bold text-gray-700">{familyMedicalHistory.relation}</p>
+                      <p className="text-xs text-gray-500">Disease: {familyMedicalHistory.disease}</p>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {member.conditions.length > 0 ? (
-                    member.conditions.map((condition, i) => (
-                      <span key={i} className={`inline-block px-2 py-1 rounded text-xs font-medium border ${
-                        condition === 'Recovered' 
-                          ? 'bg-green-50 text-green-600 border-green-100'
-                          : 'bg-red-50 text-red-600 border-red-100'
-                      }`}>
-                        {condition}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-gray-400 text-xs italic">No known conditions</span>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-
+        </div>         
       </main>
     </div>
   );
